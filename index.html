@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kenangan LVPD Monarch</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-image: url('sa-mp-000.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      overflow: hidden;
+      height: 100vh;
+      color: white;
+      text-align: center;
+      position: relative;
+    }
+
+    /* Overlay gelap */
+    body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 0;
+    }
+
+    #messageBox {
+      position: absolute;
+      top: 45%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      max-width: 700px;
+      padding: 20px;
+      color: #f8fafc;
+      z-index: 2;
+      animation: fadeInText 2s ease-in-out;
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 20px;
+    }
+
+    #messageBox h2 {
+      color: #38bdf8;
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+
+    #messageBox p {
+      font-size: 1rem;
+      line-height: 1.6rem;
+      color: #e2e8f0;
+    }
+
+    #finalText {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      display: none;
+      z-index: 2;
+      animation: fadeInFinal 3s ease-in-out forwards;
+    }
+
+    #finalText h1 {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+      color: #60a5fa;
+      text-shadow: 0 0 20px #3b82f6;
+    }
+
+    #finalText h2 {
+      font-size: 2.4rem;
+      color: #fff;
+      text-shadow: 0 0 30px #f9a8d4;
+    }
+
+    canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+    }
+
+    @keyframes fadeOutText {
+      to {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+      }
+    }
+
+    @keyframes fadeInText {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeInFinal {
+      from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+      to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Pesan awal dari Chief -->
+  <div id="messageBox">
+    <h2>“Peesan Dari Chief Superintendent  Michael”</h2>
+    <p>Terima kasih sudah jadi bagian dari perjalanan panjang ini.<br>
+    Kalian semua bukan sekadar rekan, tapi keluarga dalam seragam biru.<br>
+    Semoga di mana pun kalian bertugas, tetap menjunjung nama baik PD dengan bangga.</p>
+  </div>
+
+  <!-- Pesan akhir -->
+  <div id="finalText">
+    <h1>Thank You Temen-temen LVPD Monarch 💙</h1>
+    <h2>I Love You 🤍</h2>
+  </div>
+
+  <!-- Musik -->
+  <audio id="bgMusic" src="https://files.catbox.moe/z9t6rb.mp3" preload="auto"></audio>
+  <canvas id="fireworks"></canvas>
+
+  <script>
+    const music = document.getElementById('bgMusic');
+
+    // Play musik setelah user klik
+    document.body.addEventListener('click', () => {
+      music.volume = 0.5;
+      music.play().catch(err => console.log('Autoplay blocked:', err));
+    }, { once: true });
+
+    // Setup canvas
+    const canvas = document.getElementById('fireworks');
+    const ctx = canvas.getContext('2d');
+    let fireworks = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Firework {
+      constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.sparkles = Array.from({ length: 30 }, () => ({
+          x: x,
+          y: y,
+          dx: (Math.random() - 0.5) * 6,
+          dy: (Math.random() - 0.5) * 6,
+          alpha: 1
+        }));
+      }
+      update() {
+        this.sparkles.forEach(s => {
+          s.x += s.dx;
+          s.y += s.dy;
+          s.alpha -= 0.02;
+        });
+        this.sparkles = this.sparkles.filter(s => s.alpha > 0);
+      }
+      draw() {
+        this.sparkles.forEach(s => {
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, 2, 0, Math.PI * 2);
+          ctx.fillStyle = this.color;
+          ctx.globalAlpha = s.alpha;
+          ctx.fill();
+          ctx.globalAlpha = 1;
+        });
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      fireworks.forEach(fw => {
+        fw.update();
+        fw.draw();
+      });
+      fireworks = fireworks.filter(fw => fw.sparkles.length > 0);
+      requestAnimationFrame(animate);
+    }
+
+    function launchFirework() {
+      const x = Math.random() * canvas.width;
+      const y = Math.random() * canvas.height * 0.6;
+      const colors = ['#ff6ec7', '#38bdf8', '#fff176', '#a78bfa'];
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      fireworks.push(new Firework(x, y, color));
+    }
+
+    // Transisi teks → kembang api
+    setTimeout(() => {
+      const msg = document.getElementById('messageBox');
+      const finalText = document.getElementById('finalText');
+
+      msg.style.animation = 'fadeOutText 3s forwards';
+      setTimeout(() => {
+        msg.style.display = 'none';
+        finalText.style.display = 'block';
+        setInterval(launchFirework, 800);
+        animate();
+      }, 3000);
+    }, 13500);
+  </script>
+</body>
+</html>
