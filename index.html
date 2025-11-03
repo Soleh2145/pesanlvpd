@@ -235,44 +235,50 @@ const threads = {
 // FORM DUTY
 document.getElementById("dutyForm").addEventListener("submit", async e=>{
   e.preventDefault();
+  const statusDuty = document.getElementById("statusDuty");
   const icName = document.getElementById("officerIC").value.trim();
+
+  // VALIDASI IC
   if(!validateIC(icName)){
-    statusDuty.textContent = "❌ Format nama IC salah! Gunakan huruf, angka, underscore, 3-20 karakter.";
-    statusDuty.className = "error";
-    return;
-  }
-  const threadID = threads[icName] || "";
-  const rankVal = rank.value;
-  const noteVal = note.value.trim().split("\n").slice(0,3); // 3 aktivitas
-  const photos = [photo1, photo2, photo3].map(i=>i.files[0]).filter(f=>f);
-  if(photos.length<3){
-    statusDuty.textContent="⚠️ Upload 3 foto duty!";
+    statusDuty.textContent="❌ Format nama IC salah! Gunakan huruf, angka, underscore, 3-20 karakter.";
     statusDuty.className="error";
     return;
   }
+
+  const threadName = `DUTY-${icName.replace(/\s+/g, "_")}`; // format thread wajib
+  const rankVal = document.getElementById("rank").value;
+  const activityVal = document.getElementById("activity").value.trim().split("\n").slice(0,3);
+  const photos = photoInputs.map(i=>i.files[0]).filter(f=>f);
+  if(photos.length<3){ 
+    statusDuty.textContent="⚠️ Upload 3 foto duty!"; 
+    statusDuty.className="error"; 
+    return; 
+  }
+
   const content = `Nama Discord : ${loggedUser.username}
 Nama IC : ${icName}
 Activity :
-- ${noteVal[0] || "-"}
-- ${noteVal[1] || "-"}
-- ${noteVal[2] || "-"}`;
+- ${activityVal[0] || "-"}
+- ${activityVal[1] || "-"}
+- ${activityVal[2] || "-"}`;
 
   const formData = new FormData();
   formData.append("content", content);
   photos.forEach((p,i)=>formData.append(`file${i+1}`,p));
 
   try{
-    const res = await fetch(`${webhookDuty}?wait=true${threadID?`&thread_id=${threadID}`:""}`, {method:"POST", body:formData});
+    // kirim ke webhook Duty + thread (jika thread belum ada, Discord otomatis bikin)
+    const res = await fetch(`${webhookDuty}?thread_name=${encodeURIComponent(threadName)}`, {method:"POST", body:formData});
     if(res.ok){
       statusDuty.textContent="✅ Laporan duty berhasil dikirim!";
       statusDuty.className="success";
       e.target.reset();
       photoPreview.innerHTML="";
-    } else {
+    }else{
       statusDuty.textContent="❌ Gagal kirim laporan duty.";
       statusDuty.className="error";
     }
-  } catch(err){
+  }catch(err){
     statusDuty.textContent="⚠️ Kesalahan jaringan: "+err;
     statusDuty.className="error";
   }
@@ -327,4 +333,5 @@ document.getElementById("cutiForm").addEventListener("submit", async e=>{
 </script>
 </body>
 </html>
+
 
