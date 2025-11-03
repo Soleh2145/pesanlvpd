@@ -281,85 +281,100 @@ function updatePreview() {
 }
 
 // WEBHOOK
-const webhookDuty = "https://discord.com/api/webhooks/1434552675084664982/JK_VY1qdupQwzyKzCabN_KxasyFTHM_85EwIEbW_uUcMcBJsEjKWCuW7LeRSNTLkoQ2d";
-const webhookCuti = "https://discord.com/api/webhooks/1434552623356317716/kcdT43fdBkVPxv6sW_oQjtViAfIdYmDIE7gghDaSFz-OBhePfBVGcIhSc_QBdWmU5xLr";
+<script>
+// WEBHOOK
+const webhookDuty = "https://discord.com/api/webhooks/..."; // ganti sesuai webhook lo
+const webhookCuti = "https://discord.com/api/webhooks/...";
 
+// THREADS: gunakan IC Name
 const threads = {
   "Caramael_Gabrielle": "1434839305104134215",
   "John_McLaren": "1434839384477405294",
   "Kevin_Stone": "1434843205139959909"
 };
 
-// FORM DUTY
+// === FORM DUTY ===
 document.getElementById("dutyForm").addEventListener("submit", async (e)=>{
   e.preventDefault();
-  const name = loggedUser.username;
-  const icName = document.getElementById("officerIC").value;
-  const rankVal = rank.value;
-  const dateVal = time.value;
-  const partnerVal = document.getElementById("partner").value;
-  const activityVal = document.getElementById("activity").value.split("\n");
-  const noteVal = document.getElementById("note").value;
-  const tagsVal = document.getElementById("tags").value;
 
+  const icName = document.getElementById("officerIC").value.trim();
+  const rankVal = document.getElementById("rank").value;
+  const noteVal = document.getElementById("note").value.split("\n");
   const photos = [photo1, photo2, photo3].map(i=>i.files[0]).filter(f=>f);
-  if(photos.length<3){
-    document.getElementById("statusDuty").textContent = "⚠️ Upload 3 foto duty!";
-    document.getElementById("statusDuty").className="error";
+  const statusEl = document.getElementById("statusDuty");
+
+  if(!icName || !rankVal){
+    statusEl.textContent = "⚠️ Lengkapi semua field!";
+    statusEl.className = "error";
     return;
   }
 
- const icName = document.getElementById("officerIC").value.trim();
- const threadID = threads[icName];
-    document.getElementById("statusDuty").textContent="❌ Thread belum diset untuk nama ini!";
-    document.getElementById("statusDuty").className="error";
+  if(photos.length < 3){
+    statusEl.textContent = "⚠️ Upload 3 foto duty!";
+    statusEl.className = "error";
     return;
   }
 
-  // Format sesuai contoh
+  const threadID = threads[icName];
+  if(!threadID){
+    statusEl.textContent = "❌ Thread belum diset untuk nama IC ini!";
+    statusEl.className = "error";
+    return;
+  }
+
+  // FORMAT MESSAGE
   let content = `| - Nama IC : ${icName}\n`;
-  content += `| - Date: ${dateVal}\n`;
-  content += `| - Partner: ${partnerVal}\n`;
-  content += `| - Activity : Ada\n`;
-  content += `| - Screenshot : Ada\n`;
+  content += `| - Date: ${new Date().toLocaleDateString("id-ID")}\n`;
+  content += `| - Rank: ${rankVal}\n`;
   content += `| - Activity : MINIMAL 3\n`;
-  activityVal.forEach(act=>{
-    content += `| - ${act}\n`;
+  noteVal.forEach(act => {
+    if(act.trim()) content += `| - ${act}\n`;
   });
-  content += `\nNote : ${noteVal}\n\nTags : ${tagsVal}`;
 
   const formData = new FormData();
   formData.append("content", content);
-  photos.forEach((p,i)=>formData.append(`file${i+1}`,p));
+  photos.forEach((p,i)=>formData.append(`file${i+1}`, p));
 
   try{
-    const res = await fetch(`${webhookDuty}?wait=true&thread_id=${threadID}`,{method:"POST", body:formData});
+    const res = await fetch(`${webhookDuty}?wait=true&thread_id=${threadID}`, {
+      method: "POST",
+      body: formData
+    });
     if(res.ok){
-      document.getElementById("statusDuty").textContent="✅ Laporan duty berhasil dikirim ke thread!";
-      document.getElementById("statusDuty").className="success";
+      statusEl.textContent = "✅ Laporan duty berhasil dikirim ke thread!";
+      statusEl.className = "success";
       e.target.reset();
-      document.getElementById("photoPreview").innerHTML="";
-    }else{
-      document.getElementById("statusDuty").textContent="❌ Gagal kirim laporan duty.";
-      document.getElementById("statusDuty").className="error";
+      document.getElementById("photoPreview").innerHTML = "";
+    } else {
+      statusEl.textContent = "❌ Gagal kirim laporan duty.";
+      statusEl.className = "error";
     }
-  }catch(err){
-    document.getElementById("statusDuty").textContent="⚠️ Kesalahan jaringan: "+err;
-    document.getElementById("statusDuty").className="error";
+  } catch(err){
+    statusEl.textContent = "⚠️ Kesalahan jaringan: " + err;
+    statusEl.className = "error";
   }
 });
 
-// === CUTI ===
-document.getElementById("cutiForm").addEventListener("submit", async (e) => {
+// === FORM CUTI ===
+document.getElementById("cutiForm").addEventListener("submit", async (e)=>{
   e.preventDefault();
-  const name = loggedUser.username;
-  const icName = document.getElementById("officerICCuti").value;
-  const threadID = threads[name];
-  const status = document.getElementById("statusCuti");
 
-  if (!threadID) {
-    status.textContent = "❌ Thread belum diset untuk nama ini!";
-    status.className = "error";
+  const icName = document.getElementById("officerICCuti").value.trim();
+  const rankVal = document.getElementById("rankCuti").value;
+  const tanggalVal = document.getElementById("tanggalCuti").value;
+  const alasanVal = document.getElementById("alasanCuti").value;
+  const statusEl = document.getElementById("statusCuti");
+
+  if(!icName || !rankVal || !tanggalVal || !alasanVal){
+    statusEl.textContent = "⚠️ Lengkapi semua field!";
+    statusEl.className = "error";
+    return;
+  }
+
+  const threadID = threads[icName];
+  if(!threadID){
+    statusEl.textContent = "❌ Thread belum diset untuk nama IC ini!";
+    statusEl.className = "error";
     return;
   }
 
@@ -367,32 +382,32 @@ document.getElementById("cutiForm").addEventListener("submit", async (e) => {
     title: "📆 Laporan Cuti",
     color: 16753920,
     fields: [
-      { name: "👮 Officer Discord", value: name, inline:true },
-      { name: "🏷️ Officer IC", value: icName, inline:true },
-      { name: "🏷️ Pangkat", value: rankCuti.value, inline:true },
-      { name: "📅 Tanggal", value: tanggalCuti.value },
-      { name: "📝 Alasan", value: alasanCuti.value }
+      { name: "👮 Officer Discord", value: loggedUser.username, inline: true },
+      { name: "🏷️ Officer IC", value: icName, inline: true },
+      { name: "🏷️ Pangkat", value: rankVal, inline: true },
+      { name: "📅 Tanggal", value: tanggalVal },
+      { name: "📝 Alasan", value: alasanVal }
     ],
     footer: { text: new Date().toLocaleString("id-ID",{timeZone:"Asia/Jakarta"}) }
   };
 
-  try {
+  try{
     const res = await fetch(`${webhookCuti}?wait=true&thread_id=${threadID}`, {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ embeds:[embed] })
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ embeds: [embed] })
     });
     if(res.ok){
-      status.textContent = "✅ Laporan cuti berhasil dikirim ke thread!";
-      status.className = "success";
+      statusEl.textContent = "✅ Laporan cuti berhasil dikirim ke thread!";
+      statusEl.className = "success";
       e.target.reset();
     } else {
-      status.textContent = "❌ Gagal kirim laporan cuti.";
-      status.className = "error";
+      statusEl.textContent = "❌ Gagal kirim laporan cuti.";
+      statusEl.className = "error";
     }
-  } catch (err) {
-    status.textContent = "⚠️ Kesalahan jaringan: " + err;
-    status.className = "error";
+  } catch(err){
+    statusEl.textContent = "⚠️ Kesalahan jaringan: " + err;
+    statusEl.className = "error";
   }
 });
 </script>
