@@ -18,7 +18,7 @@
       position: relative;
       overflow-y: auto;
     }
- 
+
     body::before {
       content: "";
       position: fixed;
@@ -27,7 +27,7 @@
       background: rgba(0,0,0,0.65);
       z-index: 0;
     }
- 
+
     .container {
       background-color: rgba(28, 31, 38, 0.9);
       padding: 30px;
@@ -40,19 +40,19 @@
       margin-top: 40px;
       margin-bottom: 60px;
     }
- 
+
     h2 {
       text-align: center;
       color: #3aaefc;
       text-shadow: 0 0 6px #3aaefc80;
     }
- 
+
     .tabs {
       display: flex;
       justify-content: space-between;
       margin-bottom: 20px;
     }
- 
+
     .tab {
       flex: 1;
       padding: 10px;
@@ -63,13 +63,13 @@
       margin: 0 3px;
       transition: 0.2s;
     }
- 
+
     .tab:hover { background-color: #3aaefc77; }
     .tab.active { background-color: #3aaefc; color: white; font-weight: bold; }
- 
+
     form { display: none; }
     form.active { display: block; }
- 
+
     input, textarea, select {
       width: 100%;
       padding: 10px;
@@ -79,7 +79,7 @@
       background-color: #2a2f3a;
       color: white;
     }
- 
+
     button {
       width: 100%;
       padding: 10px;
@@ -91,18 +91,18 @@
       cursor: pointer;
       transition: 0.2s;
     }
- 
+
     button:hover { background-color: #2e8fdc; }
- 
+
     .success, .error {
       text-align: center;
       margin-top: 10px;
       font-size: 0.9em;
     }
- 
+
     .success { color: #5af77d; }
     .error { color: #f75a5a; }
- 
+
     .photo-preview {
       margin-top: 10px;
       display: flex;
@@ -110,7 +110,7 @@
       flex-wrap: wrap;
       justify-content: center;
     }
- 
+
     .photo-preview img {
       width: 110px;
       height: 110px;
@@ -118,9 +118,9 @@
       border-radius: 10px;
       border: 2px solid #3aaefc;
     }
- 
+
     #loginArea { text-align: center; margin-bottom: 20px; }
- 
+
     #discordLoginBtn {
       background-color: #5865f2;
       color: white;
@@ -131,31 +131,32 @@
       font-weight: bold;
       transition: 0.2s;
     }
- 
+
     #discordLoginBtn:hover { background-color: #4752c4; }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>SAPD REPORT SYSTEM</h2>
- 
+
     <div id="loginArea">
       <p id="loginText">Silakan login menggunakan Discord untuk melanjutkan.</p>
       <button id="discordLoginBtn">Login dengan Discord</button>
     </div>
- 
+
     <div id="mainContent" style="display:none;">
       <div class="tabs">
         <div class="tab active" data-target="dutyForm">🧭 Duty</div>
         <div class="tab" data-target="cutiForm">📆 Cuti</div>
       </div>
- 
+
 <!-- DUTY -->
 <form id="dutyForm" class="active">
   <p style="color:#ffcc00; text-align:center; margin-bottom:10px;">
     ⚠️ Pastikan nama yang tampil adalah <b>In-Character (IC)</b>!
   </p>
-  <input type="text" id="officerName" readonly />
+  <input type="text" id="officerName" readonly placeholder="Nama Discord" />
+  <input type="text" id="officerIC" placeholder="Masukkan Nama In-Character (IC)" required />
   <select id="rank" required>
     <option value="">Pilih Pangkat</option>
     <option value="Cadet">Cadet</option>
@@ -183,7 +184,8 @@
   <p style="color:#ffcc00; text-align:center; margin-bottom:10px;">
     ⚠️ Pastikan nama yang tampil adalah <b>In-Character (IC)</b>!
   </p>
-  <input type="text" id="officerNameCuti" readonly />
+  <input type="text" id="officerNameCuti" readonly placeholder="Nama Discord" />
+  <input type="text" id="officerICCuti" placeholder="Masukkan Nama In-Character (IC)" required />
   <select id="rankCuti" required>
     <option value="">Pilih Pangkat</option>
     <option value="Cadet">Cadet</option>
@@ -205,21 +207,21 @@
 const clientId = "1434832835990257674";
 const redirectUri = "https://pesanlvpd.vercel.app/";
 const scope = "identify email";
- 
+
 // === LOGIN DISCORD ===
 document.getElementById("discordLoginBtn").addEventListener("click", () => {
   const oauth2Url = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}`;
   window.location.href = oauth2Url;
 });
- 
+
 let loggedUser = null;
- 
+
 // === TOKEN HANDLER ===
 const hash = window.location.hash;
 if (hash.includes("access_token")) {
   const params = new URLSearchParams(hash.substring(1));
   const token = params.get("access_token");
- 
+
   fetch("https://discord.com/api/users/@me", {
     headers: { Authorization: `Bearer ${token}` }
   })
@@ -235,7 +237,7 @@ if (hash.includes("access_token")) {
     document.getElementById("officerNameCuti").value = user.username;
   });
 }
- 
+
 // === TAB SWITCH ===
 document.querySelectorAll(".tab").forEach(tab => {
   tab.addEventListener("click", () => {
@@ -245,12 +247,12 @@ document.querySelectorAll(".tab").forEach(tab => {
     document.getElementById(tab.dataset.target).classList.add("active");
   });
 });
- 
+
 // === PREVIEW FOTO ===
 const photoInputs = [photo1, photo2, photo3];
 const photoPreview = document.getElementById("photoPreview");
 photoInputs.forEach(i => i.addEventListener("change", updatePreview));
- 
+
 function updatePreview() {
   photoPreview.innerHTML = "";
   photoInputs.forEach(input => {
@@ -266,46 +268,47 @@ function updatePreview() {
     }
   });
 }
- 
+
 // === WEBHOOKS ===
 const webhookDuty = "https://discord.com/api/webhooks/1434552675084664982/JK_VY1qdupQwzyKzCabN_KxasyFTHM_85EwIEbW_uUcMcBJsEjKWCuW7LeRSNTLkoQ2d";
 const webhookCuti = "https://discord.com/api/webhooks/1434552623356317716/kcdT43fdBkVPxv6sW_oQjtViAfIdYmDIE7gghDaSFz-OBhePfBVGcIhSc_QBdWmU5xLr";
- 
+
 // mapping nama -> thread_id
 const threads = {
   "Soleh": "1434839305104134215",
   "Budi": "1434839384477405294",
   "tukah1234_": "1434843205139959909"
 };
- 
+
 // === DUTY ===
 document.getElementById("dutyForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const name = loggedUser.username;
+  const icName = document.getElementById("officerIC").value;
   const threadID = threads[name];
   const status = document.getElementById("statusDuty");
- 
+
   if (!threadID) {
     status.textContent = "❌ Thread belum diset untuk nama ini!";
     status.className = "error";
     return;
   }
- 
+
   const rankVal = rank.value;
   const timeVal = time.value;
   const noteVal = note.value;
- 
+
   const photos = photoInputs.map(i => i.files[0]).filter(f => f);
   if (photos.length < 3) {
     status.textContent = "⚠️ Upload 3 foto duty!";
     status.className = "error";
     return;
   }
- 
+
   const formData = new FormData();
-  formData.append("content", `🧭 **Duty Report**\n👮 Officer: ${name}\n🏷️ Rank: ${rankVal}\n🕒 Time: ${timeVal}\n📝 ${noteVal}\n⏰ ${new Date().toLocaleString("id-ID",{timeZone:"Asia/Jakarta"})}`);
+  formData.append("content", `🧭 **Duty Report**\n👮 Officer Discord: ${name}\n🏷️ Officer IC: ${icName}\n🏷️ Rank: ${rankVal}\n🕒 Time: ${timeVal}\n📝 ${noteVal}\n⏰ ${new Date().toLocaleString("id-ID",{timeZone:"Asia/Jakarta"})}`);
   photos.forEach((photo, i) => formData.append(`file${i+1}`, photo));
- 
+
   try {
     const res = await fetch(`${webhookDuty}?wait=true&thread_id=${threadID}`, { method:"POST", body: formData });
     if(res.ok){
@@ -322,32 +325,34 @@ document.getElementById("dutyForm").addEventListener("submit", async (e) => {
     status.className = "error";
   }
 });
- 
+
 // === CUTI ===
 document.getElementById("cutiForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const name = loggedUser.username;
+  const icName = document.getElementById("officerICCuti").value;
   const threadID = threads[name];
   const status = document.getElementById("statusCuti");
- 
+
   if (!threadID) {
     status.textContent = "❌ Thread belum diset untuk nama ini!";
     status.className = "error";
     return;
   }
- 
+
   const embed = {
     title: "📆 Laporan Cuti",
     color: 16753920,
     fields: [
-      { name: "👮 Officer", value: name, inline:true },
+      { name: "👮 Officer Discord", value: name, inline:true },
+      { name: "🏷️ Officer IC", value: icName, inline:true },
       { name: "🏷️ Pangkat", value: rankCuti.value, inline:true },
       { name: "📅 Tanggal", value: tanggalCuti.value },
       { name: "📝 Alasan", value: alasanCuti.value }
     ],
     footer: { text: new Date().toLocaleString("id-ID",{timeZone:"Asia/Jakarta"}) }
   };
- 
+
   try {
     const res = await fetch(`${webhookCuti}?wait=true&thread_id=${threadID}`, {
       method:"POST",
