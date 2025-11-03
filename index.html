@@ -246,19 +246,18 @@ document.getElementById("dutyForm").addEventListener("submit", async e => {
   const statusDuty = document.getElementById("statusDuty");
   const icRaw = document.getElementById("officerIC").value.trim();
 
-  // Validasi IC
+  // Validasi format IC
   if (!validateIC(icRaw)) {
-    statusDuty.textContent = "Format nama IC salah! Gunakan huruf, angka, underscore, spasi, 3-20 karakter.";
+    statusDuty.textContent = "❌ Format nama IC salah! Gunakan huruf, angka, underscore, 3-20 karakter.";
     statusDuty.className = "error";
     return;
   }
 
-  const icName = icRaw.replace(/\s+/g, "_"); // spasi jadi underscore
-  const threadName = `DUTY-${icName}`;
-  const threadID = threads[threadName];
-
+  const icName = icRaw.replace(/\s+/g, "_"); // ganti spasi ke underscore
+  const threadID = threads[icName]; // mapping thread = ICName
   if (!threadID) {
-    statusDuty.textContent = `Thread ${threadName} belum dibuat!`;
+    // Thread belum ada, langsung blokir submit
+    statusDuty.textContent = "❌ Nama IC tidak tersedia di thread.";
     statusDuty.className = "error";
     return;
   }
@@ -343,3 +342,4 @@ document.getElementById("cutiForm").addEventListener("submit", async e=>{
 </script>
 </body>
 </html>
+
