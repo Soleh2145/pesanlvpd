@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -202,7 +203,7 @@ const clientId = "1434832835990257674";
 const redirectUri = "https://pesanlvpd.vercel.app/";
 const scope = "identify email";
 
-// === LOGIN DISCORD ===
+// LOGIN DISCORD
 document.getElementById("discordLoginBtn").addEventListener("click", () => {
   const oauth2Url = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}`;
   window.location.href = oauth2Url;
@@ -210,7 +211,7 @@ document.getElementById("discordLoginBtn").addEventListener("click", () => {
 
 let loggedUser = null;
 
-// === TOKEN HANDLER ===
+// HANDLE TOKEN
 const hash = window.location.hash;
 if (hash.includes("access_token")) {
   const params = new URLSearchParams(hash.substring(1));
@@ -232,7 +233,7 @@ if (hash.includes("access_token")) {
   });
 }
 
-// === TAB SWITCH ===
+// TAB SWITCH
 document.querySelectorAll(".tab").forEach(tab => {
   tab.addEventListener("click", () => {
     document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
@@ -242,7 +243,7 @@ document.querySelectorAll(".tab").forEach(tab => {
   });
 });
 
-// === PREVIEW FOTO ===
+// PREVIEW FOTO
 const photoInputs = [photo1, photo2, photo3];
 const photoPreview = document.getElementById("photoPreview");
 photoInputs.forEach(i => i.addEventListener("change", updatePreview));
@@ -263,107 +264,137 @@ function updatePreview() {
   });
 }
 
-// === WEBHOOKS ===
+// === WEBHOOK ===
 const webhookDuty = "https://discord.com/api/webhooks/1434552675084664982/JK_VY1qdupQwzyKzCabN_KxasyFTHM_85EwIEbW_uUcMcBJsEjKWCuW7LeRSNTLkoQ2d";
 const webhookCuti = "https://discord.com/api/webhooks/1434552623356317716/kcdT43fdBkVPxv6sW_oQjtViAfIdYmDIE7gghDaSFz-OBhePfBVGcIhSc_QBdWmU5xLr";
+let threads = {};
 
-// mapping nama -> thread_id
-const threads = {
-  "Soleh": "1434839305104134215",
-  "Budi": "1434839384477405294",
-  "tukah1234_": "1434843205139959909"
-};
+// Fungsi bikin thread baru otomatis
+async function ensureThread(name) {
+  if (threads[name]) return threads[name];
 
-// === DUTY ===
+  const response = await fetch(webhookDuty, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      content: `🧵 Thread laporan untuk ${name}`,
+      allowed_mentions: { parse: [] }
+    })
+  });
+
+  const data = await response.json();
+  const threadId = data.id;
+  threads[name] = threadId;
+  return threadId;
+}
+
+// === FUNGSI CEK JAM ===
+function isWithinDutyHours() {
+  const now = new Date();
+  const hours = now.getHours();
+  return hours >= 15 || hours < 1; // 15:00 - 00:59 WIB
+}
+
+// === DUTY FORM ===
 document.getElementById("dutyForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const name = loggedUser.username;
-  const threadID = threads[name];
+  const rankVal = document.getElementById("rank").value;
+  const timeVal = document.getElementById("time").value;
+  const noteVal = document.getElementById("note").value;
   const status = document.getElementById("statusDuty");
 
-  if (!threadID) {
-    status.textContent = "❌ Thread belum diset untuk nama ini!";
+  // 🔒 Cek jam dulu
+  if (!isWithinDutyHours()) {
+    status.textContent = "⛔ Laporan duty hanya bisa dikirim antara jam 15:00 - 00:00 WIB.";
     status.className = "error";
     return;
   }
-
-  const rankVal = rank.value;
-  const timeVal = time.value;
-  const noteVal = note.value;
 
   const photos = photoInputs.map(i => i.files[0]).filter(f => f);
-  if (photos.length < 3) {
-    status.textContent = "⚠️ Upload 3 foto duty!";
+  if(photos.length < 3){
+    status.textContent = "⚠️ Harap upload 3 foto duty!";
     status.className = "error";
     return;
   }
 
-  const formData = new FormData();
-  formData.append("content", `🧭 **Duty Report**\n👮 Officer: ${name}\n🏷️ Rank: ${rankVal}\n🕒 Time: ${timeVal}\n📝 ${noteVal}\n⏰ ${new Date().toLocaleString("id-ID",{timeZone:"Asia/Jakarta"})}`);
-  photos.forEach((photo, i) => formData.append(`file${i+1}`, photo));
+  status.textContent = "⏳ Mengirim laporan...";
+  status.className = "";
 
   try {
-    const res = await fetch(`${webhookDuty}?wait=true&thread_id=${threadID}`, { method:"POST", body: formData });
+    const threadId = await ensureThread(name);
+
+    const formData = new FormData();
+    formData.append("content", `🧭 **Duty Report**\n👮 Officer: ${name}\n🏷️ Rank: ${rankVal}\n🕒 Time: ${timeVal}\n📝 Report:\n${noteVal}\n⏰ Submitted At: ${new Date().toLocaleString("id-ID",{timeZone:"Asia/Jakarta"})}`);
+    photos.forEach((photo, idx) => formData.append(`file${idx+1}`, photo));
+
+    const res = await fetch(`${webhookDuty}?thread_id=${threadId}`, {
+      method: "POST",
+      body: formData
+    });
+
     if(res.ok){
-      status.textContent = "✅ Laporan duty berhasil dikirim ke thread!";
+      status.textContent = "✅ Laporan duty berhasil dikirim!";
       status.className = "success";
       e.target.reset();
       photoPreview.innerHTML = "";
     } else {
-      status.textContent = "❌ Gagal kirim laporan duty.";
+      status.textContent = "❌ Gagal mengirim laporan duty.";
       status.className = "error";
     }
   } catch (err) {
-    status.textContent = "⚠️ Kesalahan jaringan: " + err;
+    status.textContent = "⚠️ Error: " + err.message;
     status.className = "error";
   }
 });
 
-// === CUTI ===
+// === CUTI FORM ===
 document.getElementById("cutiForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const name = loggedUser.username;
-  const threadID = threads[name];
+  const rankVal = document.getElementById("rankCuti").value;
+  const tanggal = document.getElementById("tanggalCuti").value;
+  const alasan = document.getElementById("alasanCuti").value;
   const status = document.getElementById("statusCuti");
 
-  if (!threadID) {
-    status.textContent = "❌ Thread belum diset untuk nama ini!";
-    status.className = "error";
-    return;
-  }
-
-  const embed = {
-    title: "📆 Laporan Cuti",
-    color: 16753920,
-    fields: [
-      { name: "👮 Officer", value: name, inline:true },
-      { name: "🏷️ Pangkat", value: rankCuti.value, inline:true },
-      { name: "📅 Tanggal", value: tanggalCuti.value },
-      { name: "📝 Alasan", value: alasanCuti.value }
-    ],
-    footer: { text: new Date().toLocaleString("id-ID",{timeZone:"Asia/Jakarta"}) }
-  };
+  status.textContent = "⏳ Mengirim laporan cuti...";
 
   try {
-    const res = await fetch(`${webhookCuti}?wait=true&thread_id=${threadID}`, {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ embeds:[embed] })
+    const threadId = await ensureThread(name);
+
+    const embed = {
+      title: "📆 Laporan Cuti - SAPD",
+      color: 16753920,
+      fields: [
+        { name: "👮 Officer", value: name, inline:true },
+        { name: "🏷️ Rank", value: rankVal, inline:true },
+        { name: "📅 Tanggal Cuti", value: tanggal },
+        { name: "📝 Alasan", value: alasan },
+        { name: "⏰ Submitted At", value: new Date().toLocaleString("id-ID",{timeZone:"Asia/Jakarta"}) }
+      ],
+      footer: { text: "SAPD Leave Logger | GTA:SA RP" },
+      timestamp: new Date()
+    };
+
+    const res = await fetch(`${webhookCuti}?thread_id=${threadId}`, { 
+      method: "POST", 
+      headers: { "Content-Type":"application/json" }, 
+      body: JSON.stringify({ embeds:[embed] }) 
     });
+
     if(res.ok){
-      status.textContent = "✅ Laporan cuti berhasil dikirim ke thread!";
+      status.textContent = "✅ Laporan cuti berhasil dikirim!";
       status.className = "success";
       e.target.reset();
     } else {
-      status.textContent = "❌ Gagal kirim laporan cuti.";
+      status.textContent = "❌ Gagal mengirim laporan cuti.";
       status.className = "error";
     }
   } catch (err) {
-    status.textContent = "⚠️ Kesalahan jaringan: " + err;
+    status.textContent = "⚠️ Error: " + err.message;
     status.className = "error";
   }
 });
 </script>
 </body>
 </html>
-
