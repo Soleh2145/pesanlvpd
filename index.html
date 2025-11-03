@@ -18,7 +18,6 @@ body {
   position: relative;
   overflow-y: auto;
 }
-
 body::before {
   content: "";
   position: fixed;
@@ -26,9 +25,8 @@ body::before {
   width: 100%; height: 100%;
   background: rgba(0,0,0,0.65);
   z-index: 0;
-  pointer-events: none; /* overlay tidak menghalangi klik */
+  pointer-events: none;
 }
-
 .container {
   background-color: rgba(28, 31, 38, 0.9);
   padding: 30px;
@@ -41,44 +39,32 @@ body::before {
   margin-top: 40px;
   margin-bottom: 60px;
 }
-
 h2 { text-align: center; color: #3aaefc; text-shadow: 0 0 6px #3aaefc80; }
-
-.tabs {
-  display: flex; justify-content: space-between; margin-bottom: 20px;
-}
-
+.tabs { display: flex; justify-content: space-between; margin-bottom: 20px; }
 .tab {
   flex: 1; padding: 10px; text-align: center; cursor: pointer;
   background-color: #2a2f3a; border-radius: 8px; margin: 0 3px; transition: 0.2s;
 }
-
 .tab:hover { background-color: #3aaefc77; }
 .tab.active { background-color: #3aaefc; color: white; font-weight: bold; }
-
 form { display: none; }
 form.active { display: block; }
-
 input, textarea, select {
   width: 100%; padding: 10px; margin: 8px 0; border: none; border-radius: 8px;
   background-color: #2a2f3a; color: white;
 }
-
 button {
   width: 100%; padding: 10px; border: none; border-radius: 8px;
   background-color: #3aaefc; color: white; font-weight: bold; cursor: pointer; transition: 0.2s;
 }
 button:hover { background-color: #2e8fdc; }
-
 .success, .error {
   text-align: center; margin-top: 10px; font-size: 0.9em;
 }
 .success { color: #5af77d; }
 .error { color: #f75a5a; }
-
 .photo-preview { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
 .photo-preview img { width: 110px; height: 110px; object-fit: cover; border-radius: 10px; border: 2px solid #3aaefc; }
-
 #loginArea { text-align: center; margin-bottom: 20px; }
 #discordLoginBtn {
   background-color: #5865f2; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s;
@@ -213,7 +199,11 @@ document.querySelectorAll(".tab").forEach(tab => {
 });
 
 // PHOTO PREVIEW
-const photoInputs = [photo1, photo2, photo3];
+const photoInputs = [
+  document.getElementById("photo1"),
+  document.getElementById("photo2"),
+  document.getElementById("photo3")
+];
 const photoPreview = document.getElementById("photoPreview");
 photoInputs.forEach(i => i.addEventListener("change", updatePreview));
 
@@ -237,7 +227,7 @@ function updatePreview() {
 const webhookDuty = "https://discord.com/api/webhooks/1434552675084664982/JK_VY1qdupQwzyKzCabN_KxasyFTHM_85EwIEbW_uUcMcBJsEjKWCuW7LeRSNTLkoQ2d";
 const webhookCuti = "https://discord.com/api/webhooks/1434552623356317716/kcdT43fdBkVPxv6sW_oQjtViAfIdYmDIE7gghDaSFz-OBhePfBVGcIhSc_QBdWmU5xLr";
 
-const threads = {}; // thread bisa diganti sesuai IC yang diinput
+const threads = {
   "Key_Stone": "123456789012345678",
   "Jane_Doe": "987654321098765432",
   "REPORT-DUTY..Kevin_Stone": "1434843205139959909"
@@ -247,39 +237,34 @@ const threads = {}; // thread bisa diganti sesuai IC yang diinput
 document.getElementById("dutyForm").addEventListener("submit", async e=>{
   e.preventDefault();
   const icName = document.getElementById("officerIC").value.trim();
-  const threadID = threads[icName] || ""; // bisa dikosongkan
-  if(!icName){
-    document.getElementById("statusDuty").textContent="❌ Isi nama IC!";
-    document.getElementById("statusDuty").className="error";
-    return;
-  }
-  const rankVal = rank.value;
-  const noteVal = note.value;
-  const photos = [photo1, photo2, photo3].map(i=>i.files[0]).filter(f=>f);
-  if(photos.length<3){
-    document.getElementById("statusDuty").textContent="⚠️ Upload 3 foto duty!";
-    document.getElementById("statusDuty").className="error";
-    return;
-  }
-  let content = `| - Nama IC : ${icName}\n| - Pangkat : ${rankVal}\n| - Note : ${noteVal}`;
+  const threadID = threads[icName] || "";
+  const statusDuty = document.getElementById("statusDuty");
+  if(!icName){ statusDuty.textContent="❌ Isi nama IC!"; statusDuty.className="error"; return; }
+
+  const rankVal = document.getElementById("rank").value;
+  const noteVal = document.getElementById("note").value;
+  const photos = photoInputs.map(i=>i.files[0]).filter(f=>f);
+  if(photos.length<3){ statusDuty.textContent="⚠️ Upload 3 foto duty!"; statusDuty.className="error"; return; }
+
+  const content = `| - Nama IC : ${icName}\n| - Pangkat : ${rankVal}\n| - Note : ${noteVal}`;
   const formData = new FormData();
   formData.append("content", content);
   photos.forEach((p,i)=>formData.append(`file${i+1}`,p));
 
   try{
-    const res = await fetch(`${webhookDuty}?wait=true${threadID?`&thread_id=${threadID}`:""}`,{method:"POST", body:formData});
+    const res = await fetch(`${webhookDuty}?wait=true${threadID?`&thread_id=${threadID}`:""}`, {method:"POST", body:formData});
     if(res.ok){
-      document.getElementById("statusDuty").textContent="✅ Laporan duty berhasil dikirim!";
-      document.getElementById("statusDuty").className="success";
+      statusDuty.textContent="✅ Laporan duty berhasil dikirim!";
+      statusDuty.className="success";
       e.target.reset();
       photoPreview.innerHTML="";
     }else{
-      document.getElementById("statusDuty").textContent="❌ Gagal kirim laporan duty.";
-      document.getElementById("statusDuty").className="error";
+      statusDuty.textContent="❌ Gagal kirim laporan duty.";
+      statusDuty.className="error";
     }
   }catch(err){
-    document.getElementById("statusDuty").textContent="⚠️ Kesalahan jaringan: "+err;
-    document.getElementById("statusDuty").className="error";
+    statusDuty.textContent="⚠️ Kesalahan jaringan: "+err;
+    statusDuty.className="error";
   }
 });
 
@@ -288,10 +273,12 @@ document.getElementById("cutiForm").addEventListener("submit", async e=>{
   e.preventDefault();
   const icName = document.getElementById("officerICCuti").value.trim();
   const threadID = threads[icName] || "";
-  const rankVal = rankCuti.value;
-  const tanggalVal = tanggalCuti.value;
-  const alasanVal = alasanCuti.value;
+  const statusCuti = document.getElementById("statusCuti");
   if(!icName){ statusCuti.textContent="❌ Isi nama IC!"; statusCuti.className="error"; return; }
+
+  const rankVal = document.getElementById("rankCuti").value;
+  const tanggalVal = document.getElementById("tanggalCuti").value;
+  const alasanVal = document.getElementById("alasanCuti").value;
 
   const embed = {
     title: "📆 Laporan Cuti",
@@ -328,4 +315,3 @@ document.getElementById("cutiForm").addEventListener("submit", async e=>{
 </script>
 </body>
 </html>
-
