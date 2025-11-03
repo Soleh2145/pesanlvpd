@@ -18,7 +18,6 @@ body {
   position: relative;
   overflow-y: auto;
 }
-
 body::before {
   content: "";
   position: fixed;
@@ -28,7 +27,6 @@ body::before {
   z-index: 0;
   pointer-events: none;
 }
-
 .container {
   background-color: rgba(28, 31, 38, 0.9);
   padding: 30px;
@@ -41,44 +39,32 @@ body::before {
   margin-top: 40px;
   margin-bottom: 60px;
 }
-
 h2 { text-align: center; color: #3aaefc; text-shadow: 0 0 6px #3aaefc80; }
-
-.tabs {
-  display: flex; justify-content: space-between; margin-bottom: 20px;
-}
-
+.tabs { display: flex; justify-content: space-between; margin-bottom: 20px; }
 .tab {
   flex: 1; padding: 10px; text-align: center; cursor: pointer;
   background-color: #2a2f3a; border-radius: 8px; margin: 0 3px; transition: 0.2s;
 }
-
 .tab:hover { background-color: #3aaefc77; }
 .tab.active { background-color: #3aaefc; color: white; font-weight: bold; }
-
 form { display: none; }
 form.active { display: block; }
-
 input, textarea, select {
   width: 100%; padding: 10px; margin: 8px 0; border: none; border-radius: 8px;
   background-color: #2a2f3a; color: white;
 }
-
 button {
   width: 100%; padding: 10px; border: none; border-radius: 8px;
   background-color: #3aaefc; color: white; font-weight: bold; cursor: pointer; transition: 0.2s;
 }
 button:hover { background-color: #2e8fdc; }
-
 .success, .error {
   text-align: center; margin-top: 10px; font-size: 0.9em;
 }
 .success { color: #5af77d; }
 .error { color: #f75a5a; }
-
 .photo-preview { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
 .photo-preview img { width: 110px; height: 110px; object-fit: cover; border-radius: 10px; border: 2px solid #3aaefc; }
-
 #loginArea { text-align: center; margin-bottom: 20px; }
 #discordLoginBtn {
   background-color: #5865f2; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s;
@@ -104,7 +90,7 @@ button:hover { background-color: #2e8fdc; }
     <!-- DUTY -->
     <form id="dutyForm" class="active">
       <p style="color:#ffcc00; text-align:center; margin-bottom:10px;">
-         Pastikan nama yang tampil adalah In-Character (IC)!
+         Pastikan nama yang tampil adalah <b>In-Character (IC)</b>!
       </p>
       <input type="text" id="officerName" readonly placeholder="Discord Name" />
       <input type="text" id="officerIC" placeholder="Nama IC" required />
@@ -116,10 +102,19 @@ button:hover { background-color: #2e8fdc; }
         <option value="Lieutenant">SERGENT</option>
         <option value="Captain">DETECTIVE SERGEANT</option>
         <option value="Commander">INSPECTOR</option>
+        <option value="Commander">DETECTIVE INSPECTOR</option>
+        <option value="Commander">CHIEF INSPECTOR</option>
+        <option value="Commander">SUPERINTENDENT</option>
+        <option value="Commander">DETECTIVE SUPERINTENDENT</option>
+        <option value="Commander">CHIEF SUPERINTDENT</option>
+        <option value="Commander">COMANDER</option>
         <option value="Deputy Commissioner">Deputy Commissioner</option>
         <option value="Commissioner">Commissioner</option>
       </select>
-      <textarea id="note" placeholder="Tuliskan minimal 3 aktivitas, tiap baris 1 aktivitas..." rows="5" required></textarea>
+      <textarea id="activity" placeholder="LIST DUTY
+-
+-
+-" rows="5" required></textarea>
       <label> Upload 3 Foto Duty</label>
       <input type="file" id="photo1" accept="image/*" required />
       <input type="file" id="photo2" accept="image/*" required />
@@ -132,7 +127,7 @@ button:hover { background-color: #2e8fdc; }
     <!-- CUTI -->
     <form id="cutiForm">
       <p style="color:#ffcc00; text-align:center; margin-bottom:10px;">
-        Pastikan nama yang tampil adalah In-Character (IC)!
+        Pastikan nama yang tampil adalah <b>In-Character (IC)</b>!
       </p>
       <input type="text" id="officerNameCuti" readonly placeholder="Nama Discord" />
       <input type="text" id="officerICCuti" placeholder="Masukkan Nama In-Character (IC)" required />
@@ -144,6 +139,12 @@ button:hover { background-color: #2e8fdc; }
         <option value="Lieutenant">SERGENT</option>
         <option value="Captain">DETECTIVE SERGEANT</option>
         <option value="Commander">INSPECTOR</option>
+        <option value="Commander">DETECTIVE INSPECTOR</option>
+        <option value="Commander">CHIEF INSPECTOR</option>
+        <option value="Commander">SUPERINTENDENT</option>
+        <option value="Commander">DETECTIVE SUPERINTENDENT</option>
+        <option value="Commander">CHIEF SUPERINTDENT</option>
+        <option value="Commander">COMANDER</option>
         <option value="Deputy Commissioner">Deputy Commissioner</option>
         <option value="Commissioner">Commissioner</option>
       </select>
@@ -171,10 +172,7 @@ const hash = window.location.hash;
 if (hash.includes("access_token")) {
   const params = new URLSearchParams(hash.substring(1));
   const token = params.get("access_token");
-
-  fetch("https://discord.com/api/users/@me", {
-    headers: { Authorization: `Bearer ${token}` }
-  })
+  fetch("https://discord.com/api/users/@me", { headers: { Authorization: `Bearer ${token}` }})
   .then(res => res.json())
   .then(user => {
     loggedUser = user;
@@ -199,7 +197,11 @@ document.querySelectorAll(".tab").forEach(tab => {
 });
 
 // PHOTO PREVIEW
-const photoInputs = [photo1, photo2, photo3];
+const photoInputs = [
+  document.getElementById("photo1"),
+  document.getElementById("photo2"),
+  document.getElementById("photo3")
+];
 const photoPreview = document.getElementById("photoPreview");
 photoInputs.forEach(i => i.addEventListener("change", updatePreview));
 function updatePreview() {
@@ -218,34 +220,27 @@ function updatePreview() {
   });
 }
 
-// VALIDASI NAMA IC
-function validateIC(icName){
-  return /^[A-Za-z0-9_]{3,20}$/.test(icName);
+// VALIDASI IC
+function validateIC(ic){
+  return /^[A-Za-z0-9_]{3,20}$/.test(ic);
 }
 
-// WEBHOOK & THREAD
-const webhookDuty = "WEBHOOK_DUTY";
-const webhookCuti = "WEBHOOK_CUTI";
-const threads = {
-  "Key_Stone": "123456789012345678",
-  "Jane_Doe": "987654321098765432",
-  "DUTY-Kevin_Stone": "1434843205139959909"
-};
+// WEBHOOK
+const webhookDuty = "https://discord.com/api/webhooks/1434552675084664982/JK_VY1qdupQwzyKzCabN_KxasyFTHM_85EwIEbW_uUcMcBJsEjKWCuW7LeRSNTLkoQ2d";
+const webhookCuti = "https://discord.com/api/webhooks/1434552623356317716/kcdT43fdBkVPxv6sW_oQjtViAfIdYmDIE7gghDaSFz-OBhePfBVGcIhSc_QBdWmU5xLr";
 
 // FORM DUTY
 document.getElementById("dutyForm").addEventListener("submit", async e=>{
   e.preventDefault();
   const statusDuty = document.getElementById("statusDuty");
   const icName = document.getElementById("officerIC").value.trim();
-
-  // VALIDASI IC
   if(!validateIC(icName)){
     statusDuty.textContent="❌ Format nama IC salah! Gunakan huruf, angka, underscore, 3-20 karakter.";
     statusDuty.className="error";
     return;
   }
 
-  const threadName = `DUTY-${icName.replace(/\s+/g, "_")}`; // format thread wajib
+  const threadName = `DUTY-${icName.replace(/\s+/g, "_")}`;
   const rankVal = document.getElementById("rank").value;
   const activityVal = document.getElementById("activity").value.trim().split("\n").slice(0,3);
   const photos = photoInputs.map(i=>i.files[0]).filter(f=>f);
@@ -267,7 +262,6 @@ Activity :
   photos.forEach((p,i)=>formData.append(`file${i+1}`,p));
 
   try{
-    // kirim ke webhook Duty + thread (jika thread belum ada, Discord otomatis bikin)
     const res = await fetch(`${webhookDuty}?thread_name=${encodeURIComponent(threadName)}`, {method:"POST", body:formData});
     if(res.ok){
       statusDuty.textContent="✅ Laporan duty berhasil dikirim!";
@@ -287,16 +281,13 @@ Activity :
 // FORM CUTI
 document.getElementById("cutiForm").addEventListener("submit", async e=>{
   e.preventDefault();
+  const statusCuti = document.getElementById("statusCuti");
   const icName = document.getElementById("officerICCuti").value.trim();
-  if(!validateIC(icName)){
-    statusCuti.textContent = "❌ Format nama IC salah! Gunakan huruf, angka, underscore, 3-20 karakter.";
-    statusCuti.className = "error";
-    return;
-  }
-  const threadID = threads[icName] || "";
-  const rankVal = rankCuti.value;
-  const tanggalVal = tanggalCuti.value;
-  const alasanVal = alasanCuti.value;
+  if(!icName){ statusCuti.textContent="❌ Isi nama IC!"; statusCuti.className="error"; return; }
+
+  const rankVal = document.getElementById("rankCuti").value;
+  const tanggalVal = document.getElementById("tanggalCuti").value;
+  const alasanVal = document.getElementById("alasanCuti").value;
 
   const embed = {
     title: "Laporan Cuti",
@@ -312,7 +303,7 @@ document.getElementById("cutiForm").addEventListener("submit", async e=>{
   };
 
   try{
-    const res = await fetch(`${webhookCuti}?wait=true${threadID?`&thread_id=${threadID}`:""}`, {
+    const res = await fetch(`${webhookCuti}?wait=true`, {
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body: JSON.stringify({ embeds:[embed] })
@@ -333,5 +324,3 @@ document.getElementById("cutiForm").addEventListener("submit", async e=>{
 </script>
 </body>
 </html>
-
-
