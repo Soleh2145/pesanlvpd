@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SAPD Reports - Duty & Cuti</title>
+<title>SYSTEM PD MONARCH</title>
 <style>
 body {
   font-family: Arial, sans-serif;
@@ -74,7 +74,7 @@ button:hover { background-color: #2e8fdc; }
 </head>
 <body>
 <div class="container">
-  <h2>SAPD REPORT SYSTEM</h2>
+  <h2>LVPD REPORT & CUTI SYSTEM</h2>
 
   <div id="loginArea">
     <p id="loginText">Silakan login menggunakan Discord untuk melanjutkan.</p>
@@ -232,7 +232,10 @@ const webhookCuti = "https://discord.com/api/webhooks/1434552623356317716/kcdT43
 
 const threads = {
   "Roy_Gerardo": "1434881515040411678",
-  "DUTY-Jane_Doe": "987654321098765432"
+  "Yura_Elsworth": "1434886016761856141",
+  "Kranz_Leonard": "1434886016761856141",
+  "Caramael_Gabrielle": "1434886016761856141",
+  "Stevano Gwyneth": "1434888467778633860",
 };
 
 // VALIDASI IC
@@ -271,7 +274,7 @@ document.getElementById("dutyForm").addEventListener("submit", async e => {
     return;
   }
 
-  const content = `Nama Discord : ${loggedUser.username}\nNama IC : ${icRaw}\nAcity :\n${noteVal}`;
+  const content = `Nama Discord : ${loggedUser.username}\nNama IC : ${icRaw}\nAktifitas :\n${noteVal}`;
   const formData = new FormData();
   formData.append("content", content);
   photos.forEach((p, i) => formData.append(`file${i+1}`, p));
@@ -341,5 +344,3 @@ document.getElementById("cutiForm").addEventListener("submit", async e=>{
 </script>
 </body>
 </html>
-
-
