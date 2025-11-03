@@ -1,225 +1,178 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SAPD Reports - Duty & Cuti</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: url("https://cdn.discordapp.com/attachments/123456789012345678/sapd-bg.jpg") no-repeat center center fixed;
-      background-size: cover;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-      margin: 0;
-      position: relative;
-      overflow-y: auto;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SAPD Reports - Duty & Cuti</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: url("https://cdn.discordapp.com/attachments/123456789012345678/sapd-bg.jpg") no-repeat center center fixed;
+  background-size: cover;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  margin: 0;
+  position: relative;
+  overflow-y: auto;
+}
 
-    body::before {
-      content: "";
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.65);
-      z-index: 0;
-    }
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.65);
+  z-index: 0;
+  pointer-events: none; /* overlay tidak menghalangi klik */
+}
 
-    .container {
-      background-color: rgba(28, 31, 38, 0.9);
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.6);
-      width: 400px;
-      position: relative;
-      z-index: 1;
-      backdrop-filter: blur(4px);
-      margin-top: 40px;
-      margin-bottom: 60px;
-    }
+.container {
+  background-color: rgba(28, 31, 38, 0.9);
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.6);
+  width: 400px;
+  position: relative;
+  z-index: 1;
+  backdrop-filter: blur(4px);
+  margin-top: 40px;
+  margin-bottom: 60px;
+}
 
-    h2 {
-      text-align: center;
-      color: #3aaefc;
-      text-shadow: 0 0 6px #3aaefc80;
-    }
+h2 { text-align: center; color: #3aaefc; text-shadow: 0 0 6px #3aaefc80; }
 
-    .tabs {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
+.tabs {
+  display: flex; justify-content: space-between; margin-bottom: 20px;
+}
 
-    .tab {
-      flex: 1;
-      padding: 10px;
-      text-align: center;
-      cursor: pointer;
-      background-color: #2a2f3a;
-      border-radius: 8px;
-      margin: 0 3px;
-      transition: 0.2s;
-    }
+.tab {
+  flex: 1; padding: 10px; text-align: center; cursor: pointer;
+  background-color: #2a2f3a; border-radius: 8px; margin: 0 3px; transition: 0.2s;
+}
 
-    .tab:hover { background-color: #3aaefc77; }
-    .tab.active { background-color: #3aaefc; color: white; font-weight: bold; }
+.tab:hover { background-color: #3aaefc77; }
+.tab.active { background-color: #3aaefc; color: white; font-weight: bold; }
 
-    form { display: none; }
-    form.active { display: block; }
+form { display: none; }
+form.active { display: block; }
 
-    input, textarea, select {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border: none;
-      border-radius: 8px;
-      background-color: #2a2f3a;
-      color: white;
-    }
+input, textarea, select {
+  width: 100%; padding: 10px; margin: 8px 0; border: none; border-radius: 8px;
+  background-color: #2a2f3a; color: white;
+}
 
-    button {
-      width: 100%;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      background-color: #3aaefc;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.2s;
-    }
+button {
+  width: 100%; padding: 10px; border: none; border-radius: 8px;
+  background-color: #3aaefc; color: white; font-weight: bold; cursor: pointer; transition: 0.2s;
+}
+button:hover { background-color: #2e8fdc; }
 
-    button:hover { background-color: #2e8fdc; }
+.success, .error {
+  text-align: center; margin-top: 10px; font-size: 0.9em;
+}
+.success { color: #5af77d; }
+.error { color: #f75a5a; }
 
-    .success, .error {
-      text-align: center;
-      margin-top: 10px;
-      font-size: 0.9em;
-    }
+.photo-preview { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.photo-preview img { width: 110px; height: 110px; object-fit: cover; border-radius: 10px; border: 2px solid #3aaefc; }
 
-    .success { color: #5af77d; }
-    .error { color: #f75a5a; }
-
-    .photo-preview {
-      margin-top: 10px;
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .photo-preview img {
-      width: 110px;
-      height: 110px;
-      object-fit: cover;
-      border-radius: 10px;
-      border: 2px solid #3aaefc;
-    }
-
-    #loginArea { text-align: center; margin-bottom: 20px; }
-
-    #discordLoginBtn {
-      background-color: #5865f2;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: 0.2s;
-    }
-
-    #discordLoginBtn:hover { background-color: #4752c4; }
-  </style>
+#loginArea { text-align: center; margin-bottom: 20px; }
+#discordLoginBtn {
+  background-color: #5865f2; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s;
+}
+#discordLoginBtn:hover { background-color: #4752c4; }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h2>SAPD REPORT SYSTEM</h2>
+<div class="container">
+  <h2>SAPD REPORT SYSTEM</h2>
 
-    <div id="loginArea">
-      <p id="loginText">Silakan login menggunakan Discord untuk melanjutkan.</p>
-      <button id="discordLoginBtn">Login dengan Discord</button>
+  <div id="loginArea">
+    <p id="loginText">Silakan login menggunakan Discord untuk melanjutkan.</p>
+    <button id="discordLoginBtn">Login dengan Discord</button>
+  </div>
+
+  <div id="mainContent" style="display:none;">
+    <div class="tabs">
+      <div class="tab active" data-target="dutyForm">🧭 Duty</div>
+      <div class="tab" data-target="cutiForm">📆 Cuti</div>
     </div>
 
-    <div id="mainContent" style="display:none;">
-      <div class="tabs">
-        <div class="tab active" data-target="dutyForm">🧭 Duty</div>
-        <div class="tab" data-target="cutiForm">📆 Cuti</div>
-      </div>
+    <!-- DUTY -->
+    <form id="dutyForm" class="active">
+      <p style="color:#ffcc00; text-align:center; margin-bottom:10px;">
+         Pastikan nama yang tampil adalah <b>In-Character (IC)</b>!
+      </p>
+      <input type="text" id="officerName" readonly placeholder="Discord Name" />
+      <input type="text" id="officerIC" placeholder="Nama IC" required />
+      <select id="rank" required>
+        <option value="">Pilih Pangkat</option>
+        <option value="Constable 1">CONSTABLE 1</option>
+        <option value="Officer">SENIOR CONSTABLE</option>
+        <option value="Sergeant">LEADING CONSTABLE</option>
+        <option value="Lieutenant">SERGENT</option>
+        <option value="Captain">DETECTIVE SERGEANT</option>
+        <option value="Commander">INSPECTOR</option>
+        <option value="Commander">DETECTIVE INSPECTOR</option>
+        <option value="Commander">CHIEF INSPECTOR</option>
+        <option value="Commander">SUPERINTENDENT</option>
+        <option value="Commander">DETECTIVE SUPERINTENDENT</option>
+        <option value="Commander">CHIEF SUPERINTDENT</option>
+        <option value="Commander">COMANDER</option>
+        <option value="Deputy Commissioner">Deputy Commissioner</option>
+        <option value="Commissioner">Commissioner</option>
+      </select>
+      <textarea id="note" placeholder="Tuliskan minimal 3 aktivitas, tiap baris 1 aktivitas..." rows="5" required></textarea>
+      <label> Upload 3 Foto Duty</label>
+      <input type="file" id="photo1" accept="image/*" required />
+      <input type="file" id="photo2" accept="image/*" required />
+      <input type="file" id="photo3" accept="image/*" required />
+      <div id="photoPreview" class="photo-preview"></div>
+      <button type="submit">Kirim Laporan Duty</button>
+      <p id="statusDuty"></p>
+    </form>
 
-<!-- DUTY -->
-<form id="dutyForm" class="active">
-  <p style="color:#ffcc00; text-align:center; margin-bottom:10px;">
-     Pastikan nama yang tampil adalah <b>In-Character (IC)</b>!
-  </p>
-  <input type="text" id="officerName" readonly placeholder="Discord Name" />
-  <input type="text" id="officerIC" placeholder="Nama IC" required />
-  <select id="rank" required>
-    <option value="">Pilih Pangkat</option>
-    <option value="Constable 1">CONSTABLE 1</option>
-    <option value="Officer">SNIOR CONSTABLE</option>
-    <option value="Sergeant">LEADING CONSTABLE</option>
-    <option value="Lieutenant">SERGENT</option>
-    <option value="Captain">DETECTIVE SERGEANT</option>
-    <option value="Commander">INSPECTOR</option>
-    <option value="Commander">DETECTIVE INSPECTOR</option>
-    <option value="Commander">CHIEF INSPECTOR</option>
-    <option value="Commander">SUPERINTENDENT</option>
-    <option value="Commander">DETECTIVE SUPERINTENDENT</option>
-    <option value="Commander">CHIEF SUPERINTDENT</option>
-    <option value="Commander">COMANDER</option>
-    <option value="Deputy Commissioner">Deputy Commissioner</option>
-    <option value="Commissioner">Commissioner</option>
-  </select>
-  <textarea id="note" placeholder="Tuliskan minimal 3 aktivitas, tiap baris 1 aktivitas..." rows="5" required></textarea>
-  <label> Upload 3 Foto Duty</label>
-  <input type="file" id="photo1" accept="image/*" required />
-  <input type="file" id="photo2" accept="image/*" required />
-  <input type="file" id="photo3" accept="image/*" required />
-  <div id="photoPreview" class="photo-preview"></div>
-  <button type="submit">Kirim Laporan Duty</button>
-  <p id="statusDuty"></p>
-</form>
+    <!-- CUTI -->
+    <form id="cutiForm">
+      <p style="color:#ffcc00; text-align:center; margin-bottom:10px;">
+        Pastikan nama yang tampil adalah <b>In-Character (IC)</b>!
+      </p>
+      <input type="text" id="officerNameCuti" readonly placeholder="Nama Discord" />
+      <input type="text" id="officerICCuti" placeholder="Masukkan Nama In-Character (IC)" required />
+      <select id="rankCuti" required>
+        <option value="">Pilih Pangkat</option>
+        <option value="Constable 1">CONSTABLE 1</option>
+        <option value="Officer">SENIOR CONSTABLE</option>
+        <option value="Sergeant">LEADING CONSTABLE</option>
+        <option value="Lieutenant">SERGENT</option>
+        <option value="Captain">DETECTIVE SERGEANT</option>
+        <option value="Commander">INSPECTOR</option>
+        <option value="Commander">DETECTIVE INSPECTOR</option>
+        <option value="Commander">CHIEF INSPECTOR</option>
+        <option value="Commander">SUPERINTENDENT</option>
+        <option value="Commander">DETECTIVE SUPERINTENDENT</option>
+        <option value="Commander">CHIEF SUPERINTDENT</option>
+        <option value="Commander">COMANDER</option>
+        <option value="Deputy Commissioner">Deputy Commissioner</option>
+        <option value="Commissioner">Commissioner</option>
+      </select>
+      <input type="text" id="tanggalCuti" placeholder="Tanggal Cuti (contoh: 5-7 Nov 2025)" required />
+      <textarea id="alasanCuti" placeholder="Alasan cuti..." rows="4" required></textarea>
+      <button type="submit">Kirim Laporan Cuti</button>
+      <p id="statusCuti"></p>
+    </form>
+  </div>
+</div>
 
-<!-- CUTI -->
-<form id="cutiForm">
-  <p style="color:#ffcc00; text-align:center; margin-bottom:10px;">
-    Pastikan nama yang tampil adalah <b>In-Character (IC)</b>!
-  </p>
-  <input type="text" id="officerNameCuti" readonly placeholder="Nama Discord" />
-  <input type="text" id="officerICCuti" placeholder="Masukkan Nama In-Character (IC)" required />
-  <select id="rankCuti" required>
-    <option value="">Pilih Pangkat</option>
-    <option value="Constable 1">CONSTABLE 1</option>
-    <option value="Officer">SNIOR CONSTABLE</option>
-    <option value="Sergeant">LEADING CONSTABLE</option>
-    <option value="Lieutenant">SERGENT</option>
-    <option value="Captain">DETECTIVE SERGEANT</option>
-    <option value="Commander">INSPECTOR</option>
-    <option value="Commander">DETECTIVE INSPECTOR</option>
-    <option value="Commander">CHIEF INSPECTOR</option>
-    <option value="Commander">SUPERINTENDENT</option>
-    <option value="Commander">DETECTIVE SUPERINTENDENT</option>
-    <option value="Commander">CHIEF SUPERINTDENT</option>
-    <option value="Commander">COMANDER</option>
-    <option value="Deputy Commissioner">Deputy Commissioner</option>
-    <option value="Commissioner">Commissioner</option>
-  </select>
-  <input type="text" id="tanggalCuti" placeholder="Tanggal Cuti (contoh: 5-7 Nov 2025)" required />
-  <textarea id="alasanCuti" placeholder="Alasan cuti..." rows="4" required></textarea>
-  <button type="submit">Kirim Laporan Cuti</button>
-  <p id="statusCuti"></p>
-</form>
- 
 <script>
+// LOGIN DISCORD
 const clientId = "1434832835990257674";
 const redirectUri = "https://pesanlvpd.vercel.app/";
 const scope = "identify email";
 
-// === LOGIN DISCORD ===
 document.getElementById("discordLoginBtn").addEventListener("click", () => {
   const oauth2Url = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}`;
   window.location.href = oauth2Url;
@@ -227,7 +180,7 @@ document.getElementById("discordLoginBtn").addEventListener("click", () => {
 
 let loggedUser = null;
 
-// === TOKEN HANDLER ===
+// AMBIL TOKEN
 const hash = window.location.hash;
 if (hash.includes("access_token")) {
   const params = new URLSearchParams(hash.substring(1));
@@ -249,7 +202,7 @@ if (hash.includes("access_token")) {
   });
 }
 
-// === TAB SWITCH ===
+// TAB SWITCH
 document.querySelectorAll(".tab").forEach(tab => {
   tab.addEventListener("click", () => {
     document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
@@ -259,7 +212,7 @@ document.querySelectorAll(".tab").forEach(tab => {
   });
 });
 
-//  PREVIEW FOTO 
+// PHOTO PREVIEW
 const photoInputs = [photo1, photo2, photo3];
 const photoPreview = document.getElementById("photoPreview");
 photoInputs.forEach(i => i.addEventListener("change", updatePreview));
@@ -280,134 +233,92 @@ function updatePreview() {
   });
 }
 
-// WEBHOOK
-<script>
-// WEBHOOK
-const webhookDuty = "https://discord.com/api/webhooks/..."; // ganti sesuai webhook lo
-const webhookCuti = "https://discord.com/api/webhooks/...";
+// WEBHOOK & THREAD
+const webhookDuty = "https://discord.com/api/webhooks/1434552675084664982/JK_VY1qdupQwzyKzCabN_KxasyFTHM_85EwIEbW_uUcMcBJsEjKWCuW7LeRSNTLkoQ2d";
+const webhookCuti = "https://discord.com/api/webhooks/1434552623356317716/kcdT43fdBkVPxv6sW_oQjtViAfIdYmDIE7gghDaSFz-OBhePfBVGcIhSc_QBdWmU5xLr";
 
-// THREADS: gunakan IC Name
-const threads = {
-  "Caramael_Gabrielle": "1434839305104134215",
-  "John_McLaren": "1434839384477405294",
-  "Kevin_Stone": "1434843205139959909"
-};
+const threads = {}; // thread bisa diganti sesuai IC yang diinput
 
-// === FORM DUTY ===
-document.getElementById("dutyForm").addEventListener("submit", async (e)=>{
+// FORM DUTY
+document.getElementById("dutyForm").addEventListener("submit", async e=>{
   e.preventDefault();
-
   const icName = document.getElementById("officerIC").value.trim();
-  const rankVal = document.getElementById("rank").value;
-  const noteVal = document.getElementById("note").value.split("\n");
+  const threadID = threads[icName] || ""; // bisa dikosongkan
+  if(!icName){
+    document.getElementById("statusDuty").textContent="❌ Isi nama IC!";
+    document.getElementById("statusDuty").className="error";
+    return;
+  }
+  const rankVal = rank.value;
+  const noteVal = note.value;
   const photos = [photo1, photo2, photo3].map(i=>i.files[0]).filter(f=>f);
-  const statusEl = document.getElementById("statusDuty");
-
-  if(!icName || !rankVal){
-    statusEl.textContent = "⚠️ Lengkapi semua field!";
-    statusEl.className = "error";
+  if(photos.length<3){
+    document.getElementById("statusDuty").textContent="⚠️ Upload 3 foto duty!";
+    document.getElementById("statusDuty").className="error";
     return;
   }
-
-  if(photos.length < 3){
-    statusEl.textContent = "⚠️ Upload 3 foto duty!";
-    statusEl.className = "error";
-    return;
-  }
-
-  const threadID = threads[icName];
-  if(!threadID){
-    statusEl.textContent = "❌ Thread belum diset untuk nama IC ini!";
-    statusEl.className = "error";
-    return;
-  }
-
-  // FORMAT MESSAGE
-  let content = `| - Nama IC : ${icName}\n`;
-  content += `| - Date: ${new Date().toLocaleDateString("id-ID")}\n`;
-  content += `| - Rank: ${rankVal}\n`;
-  content += `| - Activity : MINIMAL 3\n`;
-  noteVal.forEach(act => {
-    if(act.trim()) content += `| - ${act}\n`;
-  });
-
+  let content = `| - Nama IC : ${icName}\n| - Pangkat : ${rankVal}\n| - Note : ${noteVal}`;
   const formData = new FormData();
   formData.append("content", content);
-  photos.forEach((p,i)=>formData.append(`file${i+1}`, p));
+  photos.forEach((p,i)=>formData.append(`file${i+1}`,p));
 
   try{
-    const res = await fetch(`${webhookDuty}?wait=true&thread_id=${threadID}`, {
-      method: "POST",
-      body: formData
-    });
+    const res = await fetch(`${webhookDuty}?wait=true${threadID?`&thread_id=${threadID}`:""}`,{method:"POST", body:formData});
     if(res.ok){
-      statusEl.textContent = "✅ Laporan duty berhasil dikirim ke thread!";
-      statusEl.className = "success";
+      document.getElementById("statusDuty").textContent="✅ Laporan duty berhasil dikirim!";
+      document.getElementById("statusDuty").className="success";
       e.target.reset();
-      document.getElementById("photoPreview").innerHTML = "";
-    } else {
-      statusEl.textContent = "❌ Gagal kirim laporan duty.";
-      statusEl.className = "error";
+      photoPreview.innerHTML="";
+    }else{
+      document.getElementById("statusDuty").textContent="❌ Gagal kirim laporan duty.";
+      document.getElementById("statusDuty").className="error";
     }
-  } catch(err){
-    statusEl.textContent = "⚠️ Kesalahan jaringan: " + err;
-    statusEl.className = "error";
+  }catch(err){
+    document.getElementById("statusDuty").textContent="⚠️ Kesalahan jaringan: "+err;
+    document.getElementById("statusDuty").className="error";
   }
 });
 
-// === FORM CUTI ===
-document.getElementById("cutiForm").addEventListener("submit", async (e)=>{
+// FORM CUTI
+document.getElementById("cutiForm").addEventListener("submit", async e=>{
   e.preventDefault();
-
   const icName = document.getElementById("officerICCuti").value.trim();
-  const rankVal = document.getElementById("rankCuti").value;
-  const tanggalVal = document.getElementById("tanggalCuti").value;
-  const alasanVal = document.getElementById("alasanCuti").value;
-  const statusEl = document.getElementById("statusCuti");
-
-  if(!icName || !rankVal || !tanggalVal || !alasanVal){
-    statusEl.textContent = "⚠️ Lengkapi semua field!";
-    statusEl.className = "error";
-    return;
-  }
-
-  const threadID = threads[icName];
-  if(!threadID){
-    statusEl.textContent = "❌ Thread belum diset untuk nama IC ini!";
-    statusEl.className = "error";
-    return;
-  }
+  const threadID = threads[icName] || "";
+  const rankVal = rankCuti.value;
+  const tanggalVal = tanggalCuti.value;
+  const alasanVal = alasanCuti.value;
+  if(!icName){ statusCuti.textContent="❌ Isi nama IC!"; statusCuti.className="error"; return; }
 
   const embed = {
     title: "📆 Laporan Cuti",
     color: 16753920,
-    fields: [
-      { name: "👮 Officer Discord", value: loggedUser.username, inline: true },
-      { name: "🏷️ Officer IC", value: icName, inline: true },
-      { name: "🏷️ Pangkat", value: rankVal, inline: true },
+    fields:[
+      { name: "👮 Officer Discord", value: loggedUser.username, inline:true },
+      { name: "🏷️ Officer IC", value: icName, inline:true },
+      { name: "🏷️ Pangkat", value: rankVal, inline:true },
       { name: "📅 Tanggal", value: tanggalVal },
       { name: "📝 Alasan", value: alasanVal }
     ],
-    footer: { text: new Date().toLocaleString("id-ID",{timeZone:"Asia/Jakarta"}) }
+    footer:{ text: new Date().toLocaleString("id-ID",{timeZone:"Asia/Jakarta"}) }
   };
 
   try{
-    const res = await fetch(`${webhookCuti}?wait=true&thread_id=${threadID}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ embeds: [embed] })
+    const res = await fetch(`${webhookCuti}?wait=true${threadID?`&thread_id=${threadID}`:""}`, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ embeds:[embed] })
     });
     if(res.ok){
-      statusEl.textContent = "✅ Laporan cuti berhasil dikirim ke thread!";
-      statusEl.className = "success";
+      statusCuti.textContent="✅ Laporan cuti berhasil dikirim!";
+      statusCuti.className="success";
       e.target.reset();
-    } else {
-      statusEl.textContent = "❌ Gagal kirim laporan cuti.";
-      statusEl.className = "error";
+    }else{
+      statusCuti.textContent="❌ Gagal kirim laporan cuti.";
+      statusCuti.className="error";
     }
-  } catch(err){
-    statusEl.textContent = "⚠️ Kesalahan jaringan: " + err;
-    statusEl.className = "error";
+  }catch(err){
+    statusCuti.textContent="⚠️ Kesalahan jaringan: "+err;
+    statusCuti.className="error";
   }
 });
 </script>
