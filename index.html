@@ -111,7 +111,10 @@ button:hover { background-color: #2e8fdc; }
         <option value="Deputy Commissioner">Deputy Commissioner</option>
         <option value="Commissioner">Commissioner</option>
       </select>
-      <textarea id="note" placeholder="LIST DUTY:\n-\n-\n-" rows="5" required></textarea>
+      <textarea id="note" placeholder="LIST DUTY 
+-
+-
+-" rows="5" required></textarea>
       <label> Upload 3 Foto Duty</label>
       <input type="file" id="photo1" accept="image/*" required />
       <input type="file" id="photo2" accept="image/*" required />
@@ -223,9 +226,11 @@ function updatePreview() {
   });
 }
 
-// WEBHOOK
+// WEBHOOK & THREAD
 const webhookDuty = "https://discord.com/api/webhooks/1434552675084664982/JK_VY1qdupQwzyKzCabN_KxasyFTHM_85EwIEbW_uUcMcBJsEjKWCuW7LeRSNTLkoQ2d";
 const webhookCuti = "https://discord.com/api/webhooks/1434552623356317716/kcdT43fdBkVPxv6sW_oQjtViAfIdYmDIE7gghDaSFz-OBhePfBVGcIhSc_QBdWmU5xLr";
+
+const threads = {};
 
 // VALIDASI IC
 function validateIC(ic){
@@ -239,17 +244,24 @@ document.getElementById("dutyForm").addEventListener("submit", async e=>{
   const icRaw = document.getElementById("officerIC").value.trim();
 
   if(!validateIC(icRaw)){
-    statusDuty.textContent = "❌ Format nama IC salah! Gunakan huruf, angka, spasi, underscore, 3-20 karakter.";
+    statusDuty.textContent = "❌ Format nama IC salah! Gunakan huruf, angka, underscore, spasi, 3-20 karakter.";
     statusDuty.className = "error";
     return;
   }
 
-  const icName = icRaw.replace(/\s+/g, "_"); // spasi diganti underscore
-  const threadName = `DUTY-${icName}`; // format thread
+  const icName = icRaw.replace(/\s+/g, "_");
+  const threadName = `DUTY-${icName}`;
+  const threadID = threads[threadName] || "";
+
   const rankVal = document.getElementById("rank").value;
   const noteVal = document.getElementById("note").value;
   const photos = photoInputs.map(i=>i.files[0]).filter(f=>f);
-  if(photos.length<3){ statusDuty.textContent="⚠️ Upload 3 foto duty!"; statusDuty.className="error"; return; }
+
+  if(photos.length<3){
+    statusDuty.textContent = "⚠️ Upload 3 foto duty!";
+    statusDuty.className = "error";
+    return;
+  }
 
   const content = `Nama Discord : ${loggedUser.username}\nNama IC : ${icRaw}\nAcity :\n${noteVal}`;
   const formData = new FormData();
@@ -257,7 +269,7 @@ document.getElementById("dutyForm").addEventListener("submit", async e=>{
   photos.forEach((p,i)=>formData.append(`file${i+1}`,p));
 
   try{
-    const res = await fetch(`${webhookDuty}?wait=true&thread_name=${encodeURIComponent(threadName)}`, {method:"POST", body:formData});
+    const res = await fetch(`${webhookDuty}?wait=true${threadID?`&thread_id=${threadID}`:""}`, {method:"POST", body:formData});
     if(res.ok){
       statusDuty.textContent="✅ Laporan duty berhasil dikirim!";
       statusDuty.className="success";
@@ -278,6 +290,8 @@ document.getElementById("cutiForm").addEventListener("submit", async e=>{
   e.preventDefault();
   const statusCuti = document.getElementById("statusCuti");
   const icName = document.getElementById("officerICCuti").value.trim();
+  const threadID = threads[icName] || "";
+
   if(!icName){ statusCuti.textContent="❌ Isi nama IC!"; statusCuti.className="error"; return; }
 
   const rankVal = document.getElementById("rankCuti").value;
@@ -298,7 +312,7 @@ document.getElementById("cutiForm").addEventListener("submit", async e=>{
   };
 
   try{
-    const res = await fetch(`${webhookCuti}?wait=true`, {
+    const res = await fetch(`${webhookCuti}?wait=true${threadID?`&thread_id=${threadID}`:""}`, {
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body: JSON.stringify({ embeds:[embed] })
