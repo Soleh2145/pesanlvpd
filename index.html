@@ -153,24 +153,29 @@
 <!-- DUTY -->
 <form id="dutyForm" class="active">
   <p style="color:#ffcc00; text-align:center; margin-bottom:10px;">
-    ⚠️ Pastikan nama yang tampil adalah <b>In-Character (IC)</b>!
+     Pastikan nama yang tampil adalah <b>In-Character (IC)</b>!
   </p>
-  <input type="text" id="officerName" readonly placeholder="Nama Discord" />
-  <input type="text" id="officerIC" placeholder="Masukkan Nama In-Character (IC)" required />
+  <input type="text" id="officerName" readonly placeholder="Discord Name" />
+  <input type="text" id="officerIC" placeholder="Nama IC" required />
   <select id="rank" required>
     <option value="">Pilih Pangkat</option>
-    <option value="Cadet">Cadet</option>
-    <option value="Officer">Officer</option>
-    <option value="Sergeant">Sergeant</option>
-    <option value="Lieutenant">Lieutenant</option>
-    <option value="Captain">Captain</option>
-    <option value="Commander">Commander</option>
+    <option value="Constable 1">CONSTABLE 1</option>
+    <option value="Officer">SNIOR CONSTABLE</option>
+    <option value="Sergeant">LEADING CONSTABLE</option>
+    <option value="Lieutenant">SERGENT</option>
+    <option value="Captain">DETECTIVE SERGEANT</option>
+    <option value="Commander">INSPECTOR</option>
+    <option value="Commander">DETECTIVE INSPECTOR</option>
+    <option value="Commander">CHIEF INSPECTOR</option>
+    <option value="Commander">SUPERINTENDENT</option>
+    <option value="Commander">DETECTIVE SUPERINTENDENT</option>
+    <option value="Commander">CHIEF SUPERINTDENT</option>
+    <option value="Commander">COMANDER</option>
     <option value="Deputy Commissioner">Deputy Commissioner</option>
     <option value="Commissioner">Commissioner</option>
   </select>
-  <input type="text" id="time" placeholder="Jam Duty (contoh: 20:00 - 22:00)" required />
-  <textarea id="note" placeholder="Catatan / Kegiatan selama duty..." rows="4" required></textarea>
-  <label>📷 Upload 3 Foto Duty</label>
+  <textarea id="note" placeholder="Tuliskan minimal 3 aktivitas, tiap baris 1 aktivitas..." rows="5" required></textarea>
+  <label> Upload 3 Foto Duty</label>
   <input type="file" id="photo1" accept="image/*" required />
   <input type="file" id="photo2" accept="image/*" required />
   <input type="file" id="photo3" accept="image/*" required />
@@ -182,18 +187,24 @@
 <!-- CUTI -->
 <form id="cutiForm">
   <p style="color:#ffcc00; text-align:center; margin-bottom:10px;">
-    ⚠️ Pastikan nama yang tampil adalah <b>In-Character (IC)</b>!
+    Pastikan nama yang tampil adalah <b>In-Character (IC)</b>!
   </p>
   <input type="text" id="officerNameCuti" readonly placeholder="Nama Discord" />
   <input type="text" id="officerICCuti" placeholder="Masukkan Nama In-Character (IC)" required />
   <select id="rankCuti" required>
     <option value="">Pilih Pangkat</option>
-    <option value="Cadet">Cadet</option>
-    <option value="Officer">Officer</option>
-    <option value="Sergeant">Sergeant</option>
-    <option value="Lieutenant">Lieutenant</option>
-    <option value="Captain">Captain</option>
-    <option value="Commander">Commander</option>
+    <option value="Constable 1">CONSTABLE 1</option>
+    <option value="Officer">SNIOR CONSTABLE</option>
+    <option value="Sergeant">LEADING CONSTABLE</option>
+    <option value="Lieutenant">SERGENT</option>
+    <option value="Captain">DETECTIVE SERGEANT</option>
+    <option value="Commander">INSPECTOR</option>
+    <option value="Commander">DETECTIVE INSPECTOR</option>
+    <option value="Commander">CHIEF INSPECTOR</option>
+    <option value="Commander">SUPERINTENDENT</option>
+    <option value="Commander">DETECTIVE SUPERINTENDENT</option>
+    <option value="Commander">CHIEF SUPERINTDENT</option>
+    <option value="Commander">COMANDER</option>
     <option value="Deputy Commissioner">Deputy Commissioner</option>
     <option value="Commissioner">Commissioner</option>
   </select>
@@ -248,7 +259,7 @@ document.querySelectorAll(".tab").forEach(tab => {
   });
 });
 
-// === PREVIEW FOTO ===
+//  PREVIEW FOTO 
 const photoInputs = [photo1, photo2, photo3];
 const photoPreview = document.getElementById("photoPreview");
 photoInputs.forEach(i => i.addEventListener("change", updatePreview));
@@ -269,18 +280,17 @@ function updatePreview() {
   });
 }
 
-// === WEBHOOKS ===
+// WEBHOOK
 const webhookDuty = "https://discord.com/api/webhooks/1434552675084664982/JK_VY1qdupQwzyKzCabN_KxasyFTHM_85EwIEbW_uUcMcBJsEjKWCuW7LeRSNTLkoQ2d";
 const webhookCuti = "https://discord.com/api/webhooks/1434552623356317716/kcdT43fdBkVPxv6sW_oQjtViAfIdYmDIE7gghDaSFz-OBhePfBVGcIhSc_QBdWmU5xLr";
 
-// mapping nama -> thread_id
 const threads = {
-  "Soleh": "1434839305104134215",
-  "Budi": "1434839384477405294",
-  "tukah1234_": "1434843205139959909"
+  "Caramael_Gabrielle": "1434839305104134215",
+  "John_McLaren": "1434839384477405294",
+  "Kevin_Stone": "1434843205139959909"
 };
 
-// === DUTY ===
+// FORM DUTY
 document.getElementById("dutyForm").addEventListener("submit", async (e)=>{
   e.preventDefault();
   const name = loggedUser.username;
@@ -299,8 +309,8 @@ document.getElementById("dutyForm").addEventListener("submit", async (e)=>{
     return;
   }
 
-  const threadID = threads[name];
-  if(!threadID){
+ const icName = document.getElementById("officerIC").value.trim();
+ const threadID = threads[icName];
     document.getElementById("statusDuty").textContent="❌ Thread belum diset untuk nama ini!";
     document.getElementById("statusDuty").className="error";
     return;
