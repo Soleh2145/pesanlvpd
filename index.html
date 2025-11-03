@@ -288,12 +288,12 @@ async function ensureThread(name) {
   return threadId;
 }
 
-// === FUNGSI CEK JAM ===
+/*// === FUNGSI CEK JAM ===
 function isWithinDutyHours() {
   const now = new Date();
   const hours = now.getHours();
-  return hours >= 15 || hours < 1; // 15:00 - 00:59 WIB
-}
+  return hours >= 5 || hours < 6; // 15:00 - 00:59 WIB
+}*/
 
 // === DUTY FORM ===
 document.getElementById("dutyForm").addEventListener("submit", async (e) => {
@@ -398,3 +398,4 @@ document.getElementById("cutiForm").addEventListener("submit", async (e) => {
 </script>
 </body>
 </html>
+
