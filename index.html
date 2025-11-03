@@ -230,7 +230,10 @@ function updatePreview() {
 const webhookDuty = "https://discord.com/api/webhooks/1434552675084664982/JK_VY1qdupQwzyKzCabN_KxasyFTHM_85EwIEbW_uUcMcBJsEjKWCuW7LeRSNTLkoQ2d";
 const webhookCuti = "https://discord.com/api/webhooks/1434552623356317716/kcdT43fdBkVPxv6sW_oQjtViAfIdYmDIE7gghDaSFz-OBhePfBVGcIhSc_QBdWmU5xLr";
 
-const threads = {};
+const threads = {
+  "Roy_Gerardo": "1434881515040411678",
+  "DUTY-Jane_Doe": "987654321098765432"
+};
 
 // VALIDASI IC
 function validateIC(ic){
@@ -238,26 +241,33 @@ function validateIC(ic){
 }
 
 // FORM DUTY
-document.getElementById("dutyForm").addEventListener("submit", async e=>{
+document.getElementById("dutyForm").addEventListener("submit", async e => {
   e.preventDefault();
   const statusDuty = document.getElementById("statusDuty");
   const icRaw = document.getElementById("officerIC").value.trim();
 
-  if(!validateIC(icRaw)){
-    statusDuty.textContent = "❌ Format nama IC salah! Gunakan huruf, angka, underscore, spasi, 3-20 karakter.";
+  // Validasi IC
+  if (!validateIC(icRaw)) {
+    statusDuty.textContent = "Format nama IC salah! Gunakan huruf, angka, underscore, spasi, 3-20 karakter.";
     statusDuty.className = "error";
     return;
   }
 
-  const icName = icRaw.replace(/\s+/g, "_");
+  const icName = icRaw.replace(/\s+/g, "_"); // spasi jadi underscore
   const threadName = `DUTY-${icName}`;
-  const threadID = threads[threadName] || "";
+  const threadID = threads[threadName];
+
+  if (!threadID) {
+    statusDuty.textContent = `Thread ${threadName} belum dibuat!`;
+    statusDuty.className = "error";
+    return;
+  }
 
   const rankVal = document.getElementById("rank").value;
   const noteVal = document.getElementById("note").value;
-  const photos = photoInputs.map(i=>i.files[0]).filter(f=>f);
+  const photos = photoInputs.map(i => i.files[0]).filter(f => f);
 
-  if(photos.length<3){
+  if (photos.length < 3) {
     statusDuty.textContent = "⚠️ Upload 3 foto duty!";
     statusDuty.className = "error";
     return;
@@ -266,22 +276,22 @@ document.getElementById("dutyForm").addEventListener("submit", async e=>{
   const content = `Nama Discord : ${loggedUser.username}\nNama IC : ${icRaw}\nAcity :\n${noteVal}`;
   const formData = new FormData();
   formData.append("content", content);
-  photos.forEach((p,i)=>formData.append(`file${i+1}`,p));
+  photos.forEach((p, i) => formData.append(`file${i+1}`, p));
 
-  try{
-    const res = await fetch(`${webhookDuty}?wait=true${threadID?`&thread_id=${threadID}`:""}`, {method:"POST", body:formData});
-    if(res.ok){
-      statusDuty.textContent="✅ Laporan duty berhasil dikirim!";
-      statusDuty.className="success";
+  try {
+    const res = await fetch(`${webhookDuty}?wait=true&thread_id=${threadID}`, { method: "POST", body: formData });
+    if (res.ok) {
+      statusDuty.textContent = "✅ Laporan duty berhasil dikirim!";
+      statusDuty.className = "success";
       e.target.reset();
-      photoPreview.innerHTML="";
-    }else{
-      statusDuty.textContent="❌ Gagal kirim laporan duty.";
-      statusDuty.className="error";
+      photoPreview.innerHTML = "";
+    } else {
+      statusDuty.textContent = "❌ Gagal kirim laporan duty.";
+      statusDuty.className = "error";
     }
-  }catch(err){
-    statusDuty.textContent="⚠️ Kesalahan jaringan: "+err;
-    statusDuty.className="error";
+  } catch (err) {
+    statusDuty.textContent = "⚠️ Kesalahan jaringan: " + err;
+    statusDuty.className = "error";
   }
 });
 
