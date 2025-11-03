@@ -19,7 +19,6 @@
       overflow: hidden;
     }
 
-    /* overlay biar teks jelas */
     body::before {
       content: "";
       position: absolute;
@@ -37,8 +36,6 @@
       border-radius: 16px;
       box-shadow: 0 0 20px rgba(0,0,0,0.6);
       width: 400px;
-      max-height: 100vh;
-      overflow: hidden;
       position: relative;
       z-index: 1;
       backdrop-filter: blur(4px);
@@ -67,23 +64,11 @@
       transition: 0.2s;
     }
 
-    .tab:hover {
-      background-color: #3aaefc77;
-    }
+    .tab:hover { background-color: #3aaefc77; }
+    .tab.active { background-color: #3aaefc; color: white; font-weight: bold; }
 
-    .tab.active {
-      background-color: #3aaefc;
-      color: white;
-      font-weight: bold;
-    }
-
-    form {
-      display: none;
-    }
-
-    form.active {
-      display: block;
-    }
+    form { display: none; }
+    form.active { display: block; }
 
     input, textarea, select {
       width: 100%;
@@ -107,9 +92,7 @@
       transition: 0.2s;
     }
 
-    button:hover {
-      background-color: #2e8fdc;
-    }
+    button:hover { background-color: #2e8fdc; }
 
     .success, .error {
       text-align: center;
@@ -136,11 +119,7 @@
       border: 2px solid #3aaefc;
     }
 
-    /* Login area */
-    #loginArea {
-      text-align: center;
-      margin-bottom: 20px;
-    }
+    #loginArea { text-align: center; margin-bottom: 20px; }
 
     #discordLoginBtn {
       background-color: #5865f2;
@@ -153,16 +132,13 @@
       transition: 0.2s;
     }
 
-    #discordLoginBtn:hover {
-      background-color: #4752c4;
-    }
+    #discordLoginBtn:hover { background-color: #4752c4; }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>SAPD REPORT SYSTEM</h2>
 
-    <!-- LOGIN DISCORD -->
     <div id="loginArea">
       <p id="loginText">Silakan login menggunakan Discord untuk melanjutkan.</p>
       <button id="discordLoginBtn">Login dengan Discord</button>
@@ -174,9 +150,9 @@
         <div class="tab" data-target="cutiForm">📆 Cuti</div>
       </div>
 
-      <!-- DUTY FORM -->
+      <!-- DUTY -->
       <form id="dutyForm" class="active">
-        <input type="text" id="officerName" placeholder="Nama Officer" required />
+        <input type="text" id="officerName" readonly />
         <select id="rank" required>
           <option value="">Pilih Pangkat</option>
           <option value="Cadet">Cadet</option>
@@ -190,20 +166,18 @@
         </select>
         <input type="text" id="time" placeholder="Jam Duty (contoh: 20:00 - 22:00)" required />
         <textarea id="note" placeholder="Catatan / Kegiatan selama duty..." rows="4" required></textarea>
-        <label>📷 Upload Foto 1</label>
+        <label>📷 Upload 3 Foto Duty</label>
         <input type="file" id="photo1" accept="image/*" required />
-        <label>📷 Upload Foto 2</label>
         <input type="file" id="photo2" accept="image/*" required />
-        <label>📷 Upload Foto 3</label>
         <input type="file" id="photo3" accept="image/*" required />
         <div id="photoPreview" class="photo-preview"></div>
         <button type="submit">Kirim Laporan Duty</button>
         <p id="statusDuty"></p>
       </form>
 
-      <!-- CUTI FORM -->
+      <!-- CUTI -->
       <form id="cutiForm">
-        <input type="text" id="officerNameCuti" placeholder="Nama Officer" required />
+        <input type="text" id="officerNameCuti" readonly />
         <select id="rankCuti" required>
           <option value="">Pilih Pangkat</option>
           <option value="Cadet">Cadet</option>
@@ -224,156 +198,169 @@
   </div>
 
 <script>
-    // Discord OAuth2 Config
-    const clientId = "1434832835990257674";
-    const redirectUri = "https://pesanlvpd.vercel.app/";
-    const scope = "identify email";
+const clientId = "1434832835990257674";
+const redirectUri = "https://pesanlvpd.vercel.app/";
+const scope = "identify email";
 
-    // Login Button
-    document.getElementById("discordLoginBtn").addEventListener("click", () => {
-      const oauth2Url = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}`;
-      window.location.href = oauth2Url;
-    });
+// login
+document.getElementById("discordLoginBtn").addEventListener("click", () => {
+  const oauth2Url = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}`;
+  window.location.href = oauth2Url;
+});
 
-    // Check Access Token
-    const hash = window.location.hash;
-    if (hash.includes("access_token")) {
-      const params = new URLSearchParams(hash.substring(1));
-      const token = params.get("access_token");
+let loggedUser = null;
 
-      fetch("https://discord.com/api/users/@me", {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      .then(res => res.json())
-      .then(user => {
-        document.getElementById("loginArea").innerHTML = `
-          <p>✅ Login sebagai <b>${user.username}#${user.discriminator}</b></p>
-          <img src="https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png" width="80" style="border-radius:50%; margin-top:10px;">
-        `;
-        document.getElementById("mainContent").style.display = "block";
-        document.getElementById("officerName").value = user.username;
-        document.getElementById("officerNameCuti").value = user.username;
-      });
-    }
+// ambil token
+const hash = window.location.hash;
+if (hash.includes("access_token")) {
+  const params = new URLSearchParams(hash.substring(1));
+  const token = params.get("access_token");
 
-    // Tabs
-    const tabs = document.querySelectorAll(".tab");
-    const forms = document.querySelectorAll("form");
-    tabs.forEach(tab => {
-      tab.addEventListener("click", () => {
-        tabs.forEach(t => t.classList.remove("active"));
-        forms.forEach(f => f.classList.remove("active"));
-        tab.classList.add("active");
-        document.getElementById(tab.dataset.target).classList.add("active");
-      });
-    });
+  fetch("https://discord.com/api/users/@me", {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  .then(res => res.json())
+  .then(user => {
+    loggedUser = user;
+    document.getElementById("loginArea").innerHTML = `
+      <p>Login sebagai <b>${user.username}#${user.discriminator}</b></p>
+      <img src="https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png" width="80" style="border-radius:50%; margin-top:10px;">
+    `;
+    document.getElementById("mainContent").style.display = "block";
+    document.getElementById("officerName").value = user.username;
+    document.getElementById("officerNameCuti").value = user.username;
+  });
+}
 
-    // Preview foto
-    const photoInputs = [document.getElementById("photo1"), document.getElementById("photo2"), document.getElementById("photo3")];
-    const photoPreview = document.getElementById("photoPreview");
+// Tabs
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll("form").forEach(f => f.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById(tab.dataset.target).classList.add("active");
+  });
+});
 
-    photoInputs.forEach(input => input.addEventListener("change", updatePreview));
-    function updatePreview() {
-      photoPreview.innerHTML = "";
-      photoInputs.forEach(input => {
-        const file = input.files[0];
-        if(file){
-          const reader = new FileReader();
-          reader.onload = e => {
-            const img = document.createElement("img");
-            img.src = e.target.result;
-            photoPreview.appendChild(img);
-          };
-          reader.readAsDataURL(file);
-        }
-      });
-    }
+// Preview foto
+const photoInputs = [photo1, photo2, photo3];
+const photoPreview = document.getElementById("photoPreview");
+photoInputs.forEach(i => i.addEventListener("change", updatePreview));
 
-    // === WEBHOOKS ===
-    const webhookDuty = "YOUR_DUTY_WEBHOOK";
-    const webhookCuti = "YOUR_CUTI_WEBHOOK";
-
-    // Duty Form
-    document.getElementById("dutyForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const name = document.getElementById("officerName").value;
-      const rank = document.getElementById("rank").value;
-      const time = document.getElementById("time").value;
-      let note = document.getElementById("note").value;
-      const photos = photoInputs.map(i => i.files[0]).filter(f => f);
-      const status = document.getElementById("statusDuty");
-
-      if(photos.length < 3){
-        status.textContent = "⚠️ Harap upload 3 foto duty!";
-        status.className = "error";
-        return;
-      }
-
-      note = note.split("\n").map(line => line.trim()).filter(line => line).map(line => `- ${line}`).join("\n");
-
-      const formData = new FormData();
-      formData.append("content", `🧭 Duty Report\n👮 Officer: ${name}\n🏷️ Rank: ${rank}\n🕒 Time: ${time}\n📝 Report:\n${note}\n⏰ Submitted At: ${new Date().toLocaleString("id-ID", {timeZone: "Asia/Jakarta"})}`);
-      photos.forEach((photo, idx) => formData.append(`file${idx+1}`, photo));
-
-      try{
-        const res = await fetch(webhookDuty, { method: "POST", body: formData });
-        if(res.ok){
-          status.textContent = "✅ Laporan duty berhasil dikirim!";
-          status.className = "success";
-          document.getElementById("dutyForm").reset();
-          photoPreview.innerHTML = "";
-        }else{
-          status.textContent = "❌ Gagal mengirim laporan duty.";
-          status.className = "error";
-        }
-      }catch{
-        status.textContent = "⚠️ Terjadi kesalahan jaringan.";
-        status.className = "error";
-      }
-    });
-
-    // Cuti Form
-    document.getElementById("cutiForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const name = document.getElementById("officerNameCuti").value;
-      const rank = document.getElementById("rankCuti").value;
-      const tanggal = document.getElementById("tanggalCuti").value;
-      const alasan = document.getElementById("alasanCuti").value;
-      const status = document.getElementById("statusCuti");
-
-      const embed = {
-        title: "📆 Laporan Cuti - SAPD",
-        color: 16753920,
-        fields: [
-          { name: "👮 Officer", value: name, inline:true },
-          { name: "🏷️ Rank", value: rank, inline:true },
-          { name: "📅 Tanggal Cuti", value: tanggal, inline:false },
-          { name: "📝 Alasan", value: alasan, inline:false },
-          { name: "⏰ Submitted At", value: new Date().toLocaleString("id-ID",{timeZone:"Asia/Jakarta"}), inline:false }
-        ],
-        footer: { text: "SAPD Leave Logger | GTA:SA RP" },
-        timestamp: new Date()
+function updatePreview() {
+  photoPreview.innerHTML = "";
+  photoInputs.forEach(input => {
+    const file = input.files[0];
+    if(file){
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = document.createElement("img");
+        img.src = e.target.result;
+        photoPreview.appendChild(img);
       };
+      reader.readAsDataURL(file);
+    }
+  });
+}
 
-      try{
-        const res = await fetch(webhookCuti, { 
-          method: "POST", 
-          headers: { "Content-Type":"application/json" }, 
-          body: JSON.stringify({ embeds:[embed] }) 
-        });
-        if(res.ok){
-          status.textContent = "✅ Laporan cuti berhasil dikirim!";
-          status.className = "success";
-          document.getElementById("cutiForm").reset();
-        }else{
-          status.textContent = "❌ Gagal mengirim laporan cuti.";
-          status.className = "error";
-        }
-      }catch{
-        status.textContent = "⚠️ Terjadi kesalahan jaringan.";
-        status.className = "error";
-      }
+// === WEBHOOK SETUP ===
+const webhookDuty = "https://discord.com/api/webhooks/1434552675084664982/JK_VY1qdupQwzyKzCabN_KxasyFTHM_85EwIEbW_uUcMcBJsEjKWCuW7LeRSNTLkoQ2d";
+const webhookCuti = "https://discord.com/api/webhooks/1434552623356317716/kcdT43fdBkVPxv6sW_oQjtViAfIdYmDIE7gghDaSFz-OBhePfBVGcIhSc_QBdWmU5xLr";
+
+// mapping nama ke thread ID
+const threads = {
+  "Soleh": "1434839305104134215",
+  "Budi": "1434839384477405294"
+};
+
+// Duty Form
+document.getElementById("dutyForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = loggedUser.username;
+  const rank = rank.value;
+  const time = time.value;
+  let note = noteField.value;
+  const photos = photoInputs.map(i => i.files[0]).filter(f => f);
+  const status = statusDuty;
+
+  if(photos.length < 3){
+    status.textContent = "⚠️ Harap upload 3 foto duty!";
+    status.className = "error";
+    return;
+  }
+
+  note = note.split("\n").map(l => `- ${l}`).join("\n");
+
+  const formData = new FormData();
+  formData.append("content", `🧭 Duty Report\n👮 Officer: ${name}\n🏷️ Rank: ${rank}\n🕒 Time: ${time}\n📝 Report:\n${note}\n⏰ Submitted At: ${new Date().toLocaleString("id-ID",{timeZone:"Asia/Jakarta"})}`);
+  photos.forEach((photo, idx) => formData.append(`file${idx+1}`, photo));
+
+  // cari thread ID
+  let webhookUrl = webhookDuty;
+  if (threads[name]) webhookUrl += `?thread_id=${threads[name]}`;
+
+  try {
+    const res = await fetch(webhookUrl, { method: "POST", body: formData });
+    if(res.ok){
+      status.textContent = "✅ Laporan duty berhasil dikirim!";
+      status.className = "success";
+      document.getElementById("dutyForm").reset();
+      photoPreview.innerHTML = "";
+    } else {
+      status.textContent = "❌ Gagal mengirim laporan duty.";
+      status.className = "error";
+    }
+  } catch {
+    status.textContent = "⚠️ Terjadi kesalahan jaringan.";
+    status.className = "error";
+  }
+});
+
+// Cuti Form
+document.getElementById("cutiForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = loggedUser.username;
+  const rank = rankCuti.value;
+  const tanggal = tanggalCuti.value;
+  const alasan = alasanCuti.value;
+  const status = statusCuti;
+
+  const embed = {
+    title: "📆 Laporan Cuti - SAPD",
+    color: 16753920,
+    fields: [
+      { name: "👮 Officer", value: name, inline:true },
+      { name: "🏷️ Rank", value: rank, inline:true },
+      { name: "📅 Tanggal Cuti", value: tanggal },
+      { name: "📝 Alasan", value: alasan },
+      { name: "⏰ Submitted At", value: new Date().toLocaleString("id-ID",{timeZone:"Asia/Jakarta"}) }
+    ],
+    footer: { text: "SAPD Leave Logger | GTA:SA RP" },
+    timestamp: new Date()
+  };
+
+  let webhookUrl = webhookCuti;
+  if (threads[name]) webhookUrl += `?thread_id=${threads[name]}`;
+
+  try {
+    const res = await fetch(webhookUrl, { 
+      method: "POST", 
+      headers: { "Content-Type":"application/json" }, 
+      body: JSON.stringify({ embeds:[embed] }) 
     });
-  </script>
+    if(res.ok){
+      status.textContent = "✅ Laporan cuti berhasil dikirim!";
+      status.className = "success";
+      document.getElementById("cutiForm").reset();
+    } else {
+      status.textContent = "❌ Gagal mengirim laporan cuti.";
+      status.className = "error";
+    }
+  } catch {
+    status.textContent = "⚠️ Terjadi kesalahan jaringan.";
+    status.className = "error";
+  }
+});
+</script>
 </body>
 </html>
