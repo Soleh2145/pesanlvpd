@@ -111,10 +111,7 @@ button:hover { background-color: #2e8fdc; }
         <option value="Deputy Commissioner">Deputy Commissioner</option>
         <option value="Commissioner">Commissioner</option>
       </select>
-      <textarea id="activity" placeholder="LIST DUTY
--
--
--" rows="5" required></textarea>
+      <textarea id="note" placeholder="LIST DUTY:\n-\n-\n-" rows="5" required></textarea>
       <label> Upload 3 Foto Duty</label>
       <input type="file" id="photo1" accept="image/*" required />
       <input type="file" id="photo2" accept="image/*" required />
@@ -168,11 +165,16 @@ document.getElementById("discordLoginBtn").addEventListener("click", () => {
 });
 
 let loggedUser = null;
+
+// AMBIL TOKEN
 const hash = window.location.hash;
 if (hash.includes("access_token")) {
   const params = new URLSearchParams(hash.substring(1));
   const token = params.get("access_token");
-  fetch("https://discord.com/api/users/@me", { headers: { Authorization: `Bearer ${token}` }})
+
+  fetch("https://discord.com/api/users/@me", {
+    headers: { Authorization: `Bearer ${token}` }
+  })
   .then(res => res.json())
   .then(user => {
     loggedUser = user;
@@ -204,6 +206,7 @@ const photoInputs = [
 ];
 const photoPreview = document.getElementById("photoPreview");
 photoInputs.forEach(i => i.addEventListener("change", updatePreview));
+
 function updatePreview() {
   photoPreview.innerHTML = "";
   photoInputs.forEach(input => {
@@ -220,49 +223,41 @@ function updatePreview() {
   });
 }
 
-// VALIDASI IC
-function validateIC(ic){
-  return /^[A-Za-z0-9_]{3,20}$/.test(ic);
-}
-
 // WEBHOOK
 const webhookDuty = "https://discord.com/api/webhooks/1434552675084664982/JK_VY1qdupQwzyKzCabN_KxasyFTHM_85EwIEbW_uUcMcBJsEjKWCuW7LeRSNTLkoQ2d";
 const webhookCuti = "https://discord.com/api/webhooks/1434552623356317716/kcdT43fdBkVPxv6sW_oQjtViAfIdYmDIE7gghDaSFz-OBhePfBVGcIhSc_QBdWmU5xLr";
+
+// VALIDASI IC
+function validateIC(ic){
+  return /^[A-Za-z0-9 _]{3,20}$/.test(ic);
+}
 
 // FORM DUTY
 document.getElementById("dutyForm").addEventListener("submit", async e=>{
   e.preventDefault();
   const statusDuty = document.getElementById("statusDuty");
-  const icName = document.getElementById("officerIC").value.trim();
-  if(!validateIC(icName)){
-    statusDuty.textContent="❌ Format nama IC salah! Gunakan huruf, angka, underscore, 3-20 karakter.";
-    statusDuty.className="error";
+  const icRaw = document.getElementById("officerIC").value.trim();
+
+  if(!validateIC(icRaw)){
+    statusDuty.textContent = "❌ Format nama IC salah! Gunakan huruf, angka, spasi, underscore, 3-20 karakter.";
+    statusDuty.className = "error";
     return;
   }
 
-  const threadName = `DUTY-${icName.replace(/\s+/g, "_")}`;
+  const icName = icRaw.replace(/\s+/g, "_"); // spasi diganti underscore
+  const threadName = `DUTY-${icName}`; // format thread
   const rankVal = document.getElementById("rank").value;
-  const activityVal = document.getElementById("activity").value.trim().split("\n").slice(0,3);
+  const noteVal = document.getElementById("note").value;
   const photos = photoInputs.map(i=>i.files[0]).filter(f=>f);
-  if(photos.length<3){ 
-    statusDuty.textContent="⚠️ Upload 3 foto duty!"; 
-    statusDuty.className="error"; 
-    return; 
-  }
+  if(photos.length<3){ statusDuty.textContent="⚠️ Upload 3 foto duty!"; statusDuty.className="error"; return; }
 
-  const content = `Nama Discord : ${loggedUser.username}
-Nama IC : ${icName}
-Activity :
-- ${activityVal[0] || "-"}
-- ${activityVal[1] || "-"}
-- ${activityVal[2] || "-"}`;
-
+  const content = `Nama Discord : ${loggedUser.username}\nNama IC : ${icRaw}\nAcity :\n${noteVal}`;
   const formData = new FormData();
   formData.append("content", content);
   photos.forEach((p,i)=>formData.append(`file${i+1}`,p));
 
   try{
-    const res = await fetch(`${webhookDuty}?thread_name=${encodeURIComponent(threadName)}`, {method:"POST", body:formData});
+    const res = await fetch(`${webhookDuty}?wait=true&thread_name=${encodeURIComponent(threadName)}`, {method:"POST", body:formData});
     if(res.ok){
       statusDuty.textContent="✅ Laporan duty berhasil dikirim!";
       statusDuty.className="success";
