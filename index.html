@@ -281,48 +281,61 @@ const threads = {
 };
 
 // === DUTY ===
-document.getElementById("dutyForm").addEventListener("submit", async (e) => {
+document.getElementById("dutyForm").addEventListener("submit", async (e)=>{
   e.preventDefault();
   const name = loggedUser.username;
   const icName = document.getElementById("officerIC").value;
-  const threadID = threads[name];
-  const status = document.getElementById("statusDuty");
-
-  if (!threadID) {
-    status.textContent = "❌ Thread belum diset untuk nama ini!";
-    status.className = "error";
-    return;
-  }
-
   const rankVal = rank.value;
-  const timeVal = time.value;
-  const noteVal = note.value;
+  const dateVal = time.value;
+  const partnerVal = document.getElementById("partner").value;
+  const activityVal = document.getElementById("activity").value.split("\n");
+  const noteVal = document.getElementById("note").value;
+  const tagsVal = document.getElementById("tags").value;
 
-  const photos = photoInputs.map(i => i.files[0]).filter(f => f);
-  if (photos.length < 3) {
-    status.textContent = "⚠️ Upload 3 foto duty!";
-    status.className = "error";
+  const photos = [photo1, photo2, photo3].map(i=>i.files[0]).filter(f=>f);
+  if(photos.length<3){
+    document.getElementById("statusDuty").textContent = "⚠️ Upload 3 foto duty!";
+    document.getElementById("statusDuty").className="error";
     return;
   }
+
+  const threadID = threads[name];
+  if(!threadID){
+    document.getElementById("statusDuty").textContent="❌ Thread belum diset untuk nama ini!";
+    document.getElementById("statusDuty").className="error";
+    return;
+  }
+
+  // Format sesuai contoh
+  let content = `| - Nama IC : ${icName}\n`;
+  content += `| - Date: ${dateVal}\n`;
+  content += `| - Partner: ${partnerVal}\n`;
+  content += `| - Activity : Ada\n`;
+  content += `| - Screenshot : Ada\n`;
+  content += `| - Activity : MINIMAL 3\n`;
+  activityVal.forEach(act=>{
+    content += `| - ${act}\n`;
+  });
+  content += `\nNote : ${noteVal}\n\nTags : ${tagsVal}`;
 
   const formData = new FormData();
-  formData.append("content", `🧭 **Duty Report**\n👮 Officer Discord: ${name}\n🏷️ Officer IC: ${icName}\n🏷️ Rank: ${rankVal}\n🕒 Time: ${timeVal}\n📝 ${noteVal}\n⏰ ${new Date().toLocaleString("id-ID",{timeZone:"Asia/Jakarta"})}`);
-  photos.forEach((photo, i) => formData.append(`file${i+1}`, photo));
+  formData.append("content", content);
+  photos.forEach((p,i)=>formData.append(`file${i+1}`,p));
 
-  try {
-    const res = await fetch(`${webhookDuty}?wait=true&thread_id=${threadID}`, { method:"POST", body: formData });
+  try{
+    const res = await fetch(`${webhookDuty}?wait=true&thread_id=${threadID}`,{method:"POST", body:formData});
     if(res.ok){
-      status.textContent = "✅ Laporan duty berhasil dikirim ke thread!";
-      status.className = "success";
+      document.getElementById("statusDuty").textContent="✅ Laporan duty berhasil dikirim ke thread!";
+      document.getElementById("statusDuty").className="success";
       e.target.reset();
-      photoPreview.innerHTML = "";
-    } else {
-      status.textContent = "❌ Gagal kirim laporan duty.";
-      status.className = "error";
+      document.getElementById("photoPreview").innerHTML="";
+    }else{
+      document.getElementById("statusDuty").textContent="❌ Gagal kirim laporan duty.";
+      document.getElementById("statusDuty").className="error";
     }
-  } catch (err) {
-    status.textContent = "⚠️ Kesalahan jaringan: " + err;
-    status.className = "error";
+  }catch(err){
+    document.getElementById("statusDuty").textContent="⚠️ Kesalahan jaringan: "+err;
+    document.getElementById("statusDuty").className="error";
   }
 });
 
